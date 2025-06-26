@@ -1,10 +1,12 @@
 using Avalonia.Controls;
 using Avalonia.Input;
+using Avalonia.Interactivity;
 using MsBox.Avalonia;
 using MsBox.Avalonia.Base;
 using MsBox.Avalonia.Enums;
 
 using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 
@@ -12,6 +14,7 @@ namespace NManager;
 
 public partial class MainWindow : Window
 {
+    private readonly Stack<string> previousPaths = new();
     private string currentPath = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
     private int filesStartIndex = 0;
 
@@ -19,6 +22,8 @@ public partial class MainWindow : Window
     {
         InitializeComponent();
         DisplayContent(currentPath);
+
+        contentList.MaxHeight = this.Height;
     }
 
     private bool DisplayContent(string currentPath)
@@ -61,6 +66,11 @@ public partial class MainWindow : Window
         }
     }
 
+    private void MainWindow_ResizedHandler(object? sender, WindowResizedEventArgs args)
+    {
+        contentList.MaxHeight = this.Height;
+    }
+
     private void ContentList_DoubleTappedHandler(object? sender, TappedEventArgs args)
     {
         if (contentList.SelectedIndex < filesStartIndex)
@@ -69,6 +79,7 @@ public partial class MainWindow : Window
 
             if (DisplayContent(newCurrentPath))
             {
+                previousPaths.Push(currentPath);
                 currentPath = newCurrentPath;
             }
         }
@@ -83,6 +94,15 @@ public partial class MainWindow : Window
             process.StartInfo = processStartInfo;
 
             process.Start();
+        }
+    }
+
+    private void BackButton_ClickHandler(object? sender, RoutedEventArgs args)
+    {
+        if (previousPaths.Count > 0)
+        {
+            currentPath = previousPaths.Pop();
+            DisplayContent(currentPath);
         }
     }
 }
