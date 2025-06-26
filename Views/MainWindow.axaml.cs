@@ -21,7 +21,7 @@ public partial class MainWindow : Window
         DisplayContent(currentPath);
     }
 
-    private void DisplayContent(string currentPath)
+    private bool DisplayContent(string currentPath)
     {
         try
         {
@@ -42,16 +42,22 @@ public partial class MainWindow : Window
 
             contentList.ItemsSource = content;
             filesStartIndex = subdirectories.Length;
+
+            return true;
         }
         catch (DirectoryNotFoundException)
         {
             IMsBox<ButtonResult> messageBox = MessageBoxManager.GetMessageBoxStandard("Could Not Find Folder", "The selected folder could not be found.", ButtonEnum.Ok, MsBox.Avalonia.Enums.Icon.Error);
             messageBox.ShowAsync();
+
+            return false;
         }
         catch (UnauthorizedAccessException)
         {
             IMsBox<ButtonResult> messageBox = MessageBoxManager.GetMessageBoxStandard("Permission Denied", "You do not have permission to open this folder.", ButtonEnum.Ok, MsBox.Avalonia.Enums.Icon.Error);
             messageBox.ShowAsync();
+
+            return false;
         }
     }
 
@@ -60,8 +66,11 @@ public partial class MainWindow : Window
         if (contentList.SelectedIndex < filesStartIndex)
         {
             string newCurrentPath = currentPath + "/" + contentList.SelectedItem;
-            DisplayContent(newCurrentPath);
-            currentPath = newCurrentPath;
+
+            if (DisplayContent(newCurrentPath))
+            {
+                currentPath = newCurrentPath;
+            }
         }
         else
         {
