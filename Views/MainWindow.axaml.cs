@@ -25,7 +25,6 @@ public partial class MainWindow : Window
 
         backButton.IsEnabled = previousPaths.Count > 0;
         forwardButton.IsEnabled = nextPaths.Count > 0;
-        contentList.MaxHeight = this.Height;
     }
 
     private bool DisplayContent(string currentPath)
@@ -68,12 +67,17 @@ public partial class MainWindow : Window
         }
     }
 
-    private void MainWindow_ResizedHandler(object? sender, WindowResizedEventArgs args)
+    private void MainWindowLoadedHandler(object? sender, RoutedEventArgs args)
     {
-        contentList.MaxHeight = this.Height;
+        contentList.Height = this.Height - toolbar.Bounds.Height;
     }
 
-    private void ContentList_DoubleTappedHandler(object? sender, TappedEventArgs args)
+    private void MainWindowResizedHandler(object? sender, WindowResizedEventArgs args)
+    {
+        contentList.Height = this.Height - toolbar.Bounds.Height;
+    }
+
+    private void ContentListDoubleTappedHandler(object? sender, TappedEventArgs args)
     {
         if (contentList.SelectedIndex < filesStartIndex)
         {
@@ -107,7 +111,7 @@ public partial class MainWindow : Window
         }
     }
 
-    private void BackButton_ClickHandler(object? sender, RoutedEventArgs args)
+    private void BackButtonClickHandler(object? sender, RoutedEventArgs args)
     {
         if (previousPaths.Count > 0)
         {
@@ -122,7 +126,7 @@ public partial class MainWindow : Window
         forwardButton.IsEnabled = nextPaths.Count > 0;
     }
 
-    private void ForwardButton_ClickHandler(object? sender, RoutedEventArgs args)
+    private void ForwardButtonClickHandler(object? sender, RoutedEventArgs args)
     {
         if (nextPaths.Count > 0)
         {

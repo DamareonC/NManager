@@ -1,13 +1,13 @@
-<Window xmlns="https://github.com/avaloniaui" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:d="http://schemas.microsoft.com/expression/blend/2008" xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" mc:Ignorable="d" d:DesignWidth="640" d:DesignHeight="480" Width="640" Height="480" x:Class="NManager.MainWindow" Title="NManager" Resized="MainWindow_ResizedHandler">
+<Window xmlns="https://github.com/avaloniaui" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:d="http://schemas.microsoft.com/expression/blend/2008" xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" mc:Ignorable="d" d:DesignWidth="640" d:DesignHeight="480" Width="640" Height="480" x:Class="NManager.MainWindow" Title="NManager" Loaded="MainWindowLoadedHandler" Resized="MainWindowResizedHandler">
 	<StackPanel>
-		<StackPanel Orientation="Horizontal">
-			<Button x:Name="backButton" Click="BackButton_ClickHandler">&#8592;</Button>
-			<Button x:Name="forwardButton" Click="ForwardButton_ClickHandler">&#8594;</Button>
+		<StackPanel x:Name="toolbar" Orientation="Horizontal">
+			<Button x:Name="backButton" Click="BackButtonClickHandler">&#8592;</Button>
+			<Button x:Name="forwardButton" Click="ForwardButtonClickHandler">&#8594;</Button>
 		</StackPanel>
 		
 		<ScrollViewer>
 			<StackPanel>
-				<ListBox x:Name="contentList" DoubleTapped="ContentList_DoubleTappedHandler"/>
+				<ListBox x:Name="contentList" DoubleTapped="ContentListDoubleTappedHandler"/>
 			</StackPanel>
 		</ScrollViewer>
 	</StackPanel>
