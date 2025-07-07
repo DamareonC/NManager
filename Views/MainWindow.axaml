@@ -1,8 +1,10 @@
 <Window xmlns="https://github.com/avaloniaui" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:d="http://schemas.microsoft.com/expression/blend/2008" xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" mc:Ignorable="d" d:DesignWidth="640" d:DesignHeight="480" Width="640" Height="480" x:Class="NManager.MainWindow" Title="NManager" Loaded="MainWindowLoadedHandler" Resized="MainWindowResizedHandler">
 	<StackPanel>
 		<StackPanel x:Name="toolbar" Orientation="Horizontal">
-			<Button x:Name="backButton" Click="BackButtonClickHandler">&#8592;</Button>
-			<Button x:Name="forwardButton" Click="ForwardButtonClickHandler">&#8594;</Button>
+			<Button x:Name="backButton" Click="BackButtonClickHandler" ToolTip.Tip="Back one folder">&#8592;</Button>
+			<Button x:Name="forwardButton" Click="ForwardButtonClickHandler" ToolTip.Tip="Forward one folder">&#8594;</Button>
+			<Button x:Name="reloadButton" Click="ReloadButtonClickHandler" ToolTip.Tip="Reload current folder">&#8634;</Button>
+			<TextBox x:Name="pathTextField" KeyDown="PathTextFieldKeyDownHandler" Watermark="Enter absolute path here"></TextBox>
 		</StackPanel>
 		
 		<ScrollViewer>

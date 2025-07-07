@@ -23,6 +23,7 @@ public partial class MainWindow : Window
         InitializeComponent();
         DisplayContent(currentPath);
 
+        pathTextField.Text = currentPath;
         backButton.IsEnabled = previousPaths.Count > 0;
         forwardButton.IsEnabled = nextPaths.Count > 0;
     }
@@ -67,21 +68,36 @@ public partial class MainWindow : Window
         }
     }
 
+    private void RecalculateContentSize()
+    {
+        double totalToolbarButtonsLength = 0;
+
+        for (int i = 0; i < toolbar.Children.Count - 1; i++)
+        {
+            totalToolbarButtonsLength += toolbar.Children[i].Bounds.Width;
+        }
+
+        pathTextField.Width = this.Width - totalToolbarButtonsLength;
+        contentList.Height = this.Height - toolbar.Bounds.Height;
+    }
+
     private void MainWindowLoadedHandler(object? sender, RoutedEventArgs args)
     {
-        contentList.Height = this.Height - toolbar.Bounds.Height;
+        RecalculateContentSize();
     }
 
     private void MainWindowResizedHandler(object? sender, WindowResizedEventArgs args)
     {
-        contentList.Height = this.Height - toolbar.Bounds.Height;
+        RecalculateContentSize();
     }
 
     private void ContentListDoubleTappedHandler(object? sender, TappedEventArgs args)
     {
+        string slash = OperatingSystem.IsWindows() ? "\\" : "/";
+
         if (contentList.SelectedIndex < filesStartIndex)
         {
-            string newCurrentPath = currentPath + "/" + contentList.SelectedItem;
+            string newCurrentPath = currentPath + slash + contentList.SelectedItem;
 
             if (DisplayContent(newCurrentPath))
             {
@@ -93,6 +109,7 @@ public partial class MainWindow : Window
                 }
 
                 currentPath = newCurrentPath;
+                pathTextField.Text = currentPath;
                 backButton.IsEnabled = previousPaths.Count > 0;
                 forwardButton.IsEnabled = nextPaths.Count > 0;
             }
@@ -102,7 +119,7 @@ public partial class MainWindow : Window
             Process process = new();
             ProcessStartInfo processStartInfo = new()
             {
-                FileName = currentPath + "/" + contentList.SelectedItem,
+                FileName = currentPath + slash + contentList.SelectedItem,
                 UseShellExecute = true
             };
             process.StartInfo = processStartInfo;
@@ -118,6 +135,7 @@ public partial class MainWindow : Window
             nextPaths.Push(currentPath);
 
             currentPath = previousPaths.Pop();
+            pathTextField.Text = currentPath;
 
             DisplayContent(currentPath);
         }
@@ -133,8 +151,32 @@ public partial class MainWindow : Window
             previousPaths.Push(currentPath);
 
             currentPath = nextPaths.Pop();
+            pathTextField.Text = currentPath;
 
             DisplayContent(currentPath);
+        }
+
+        backButton.IsEnabled = previousPaths.Count > 0;
+        forwardButton.IsEnabled = nextPaths.Count > 0;
+    }
+
+    private void ReloadButtonClickHandler(object? sender, RoutedEventArgs args)
+    {
+        DisplayContent(currentPath);
+    }
+
+    private void PathTextFieldKeyDownHandler(object? sender, KeyEventArgs args)
+    {
+        if (args.Key == Key.Enter && pathTextField.Text != null && pathTextField.Text.Length > 0 && DisplayContent(pathTextField.Text))
+        {
+            previousPaths.Push(currentPath);
+
+            if (nextPaths.Count != 0)
+            {
+                nextPaths.Clear();
+            }
+
+            currentPath = pathTextField.Text;
         }
 
         backButton.IsEnabled = previousPaths.Count > 0;
