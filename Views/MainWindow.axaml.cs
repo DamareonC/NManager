@@ -14,7 +14,7 @@ namespace NManager;
 
 public partial class MainWindow : Window
 {
-    private readonly Stack<string> previousPaths = new();
+    private readonly Stack<string> previousPaths = new(), nextPaths = new();
     private string currentPath = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
     private int filesStartIndex = 0;
 
@@ -23,6 +23,8 @@ public partial class MainWindow : Window
         InitializeComponent();
         DisplayContent(currentPath);
 
+        backButton.IsEnabled = previousPaths.Count > 0;
+        forwardButton.IsEnabled = nextPaths.Count > 0;
         contentList.MaxHeight = this.Height;
     }
 
@@ -80,7 +82,15 @@ public partial class MainWindow : Window
             if (DisplayContent(newCurrentPath))
             {
                 previousPaths.Push(currentPath);
+
+                if (nextPaths.Count != 0)
+                {
+                    nextPaths.Clear();
+                }
+
                 currentPath = newCurrentPath;
+                backButton.IsEnabled = previousPaths.Count > 0;
+                forwardButton.IsEnabled = nextPaths.Count > 0;
             }
         }
         else
@@ -101,8 +111,29 @@ public partial class MainWindow : Window
     {
         if (previousPaths.Count > 0)
         {
+            nextPaths.Push(currentPath);
+
             currentPath = previousPaths.Pop();
+
             DisplayContent(currentPath);
         }
+
+        backButton.IsEnabled = previousPaths.Count > 0;
+        forwardButton.IsEnabled = nextPaths.Count > 0;
+    }
+
+    private void ForwardButton_ClickHandler(object? sender, RoutedEventArgs args)
+    {
+        if (nextPaths.Count > 0)
+        {
+            previousPaths.Push(currentPath);
+
+            currentPath = nextPaths.Pop();
+
+            DisplayContent(currentPath);
+        }
+
+        backButton.IsEnabled = previousPaths.Count > 0;
+        forwardButton.IsEnabled = nextPaths.Count > 0;
     }
 }
