@@ -12,8 +12,8 @@
 		Icon="/Assets/avalonia-logo.ico"
 		Width="640"
 		Height="480"
-		Loaded="MainWindowLoadedHandler"
-		Resized="MainWindowResizedHandler">
+		Loaded="MainWindowLoaded"
+		Resized="MainWindowResized">
 
 	<Design.DataContext>
         <vm:MainWindowViewModel/>
@@ -22,15 +22,15 @@
 	<StackPanel>
 
 		<StackPanel x:Name="toolbar" Orientation="Horizontal">
-			<Button x:Name="backButton" Click="BackButtonClickHandler" ToolTip.Tip="Back one folder">&#8592;</Button>
-			<Button x:Name="forwardButton" Click="ForwardButtonClickHandler" ToolTip.Tip="Forward one folder">&#8594;</Button>
-			<Button x:Name="reloadButton" Click="ReloadButtonClickHandler" ToolTip.Tip="Reload current folder">&#8634;</Button>
-			<TextBox x:Name="pathTextField" KeyDown="PathTextFieldKeyDownHandler" Watermark="Enter absolute path here"></TextBox>
+			<Button x:Name="backButton" Command="{Binding OnBackButtonClick}" IsEnabled="{Binding BackButtonIsEnabled, Mode=OneWay}" ToolTip.Tip="Back one folder">&#8592;</Button>
+			<Button x:Name="forwardButton" Command="{Binding OnForwardButtonClick}" IsEnabled="{Binding ForwardButtonIsEnabled, Mode=OneWay}" ToolTip.Tip="Forward one folder">&#8594;</Button>
+			<Button x:Name="reloadButton" Command="{Binding OnReloadButtonClick}" ToolTip.Tip="Reload current folder">&#8634;</Button>
+			<TextBox x:Name="pathTextField" KeyDown="PathTextFieldKeyDown" Text="{Binding PathTextFieldText, Mode=OneWay}" Watermark="Enter absolute path here"></TextBox>
 		</StackPanel>
 		
 		<ScrollViewer>
 			<StackPanel>
-				<ListBox x:Name="contentList" DoubleTapped="ContentListDoubleTappedHandler"/>
+				<ListBox x:Name="contentList" DoubleTapped="ContentListDoubleTapped" ItemsSource="{Binding ContentListItemsSource, Mode=OneWay}" SelectedIndex="{Binding ContentListSelectedIndex}" SelectedItem="{Binding ContentListSelectedItem}"/>
 			</StackPanel>
 		</ScrollViewer>
 
