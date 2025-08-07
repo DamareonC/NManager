@@ -1,5 +1,26 @@
-<Window xmlns="https://github.com/avaloniaui" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:d="http://schemas.microsoft.com/expression/blend/2008" xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" mc:Ignorable="d" d:DesignWidth="640" d:DesignHeight="480" x:Class="NManager.Views.MainWindow" Width="640" Height="480" Title="NManager" Loaded="MainWindowLoadedHandler" Resized="MainWindowResizedHandler">
+<Window xmlns="https://github.com/avaloniaui"
+		xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+		xmlns:vm="using:NManager.ViewModels"
+		xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+		xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+		mc:Ignorable="d"
+		d:DesignWidth="640"
+		d:DesignHeight="480"
+		x:Class="NManager.Views.MainWindow"
+		x:DataType="vm:MainWindowViewModel"
+		Title="NManager"
+		Icon="/Assets/avalonia-logo.ico"
+		Width="640"
+		Height="480"
+		Loaded="MainWindowLoadedHandler"
+		Resized="MainWindowResizedHandler">
+
+	<Design.DataContext>
+        <vm:MainWindowViewModel/>
+    </Design.DataContext>
+		
 	<StackPanel>
+
 		<StackPanel x:Name="toolbar" Orientation="Horizontal">
 			<Button x:Name="backButton" Click="BackButtonClickHandler" ToolTip.Tip="Back one folder">&#8592;</Button>
 			<Button x:Name="forwardButton" Click="ForwardButtonClickHandler" ToolTip.Tip="Forward one folder">&#8594;</Button>
@@ -12,5 +33,7 @@
 				<ListBox x:Name="contentList" DoubleTapped="ContentListDoubleTappedHandler"/>
 			</StackPanel>
 		</ScrollViewer>
+
 	</StackPanel>
+
 </Window>
