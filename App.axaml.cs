@@ -2,6 +2,8 @@ using Avalonia;
 using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Markup.Xaml;
 
+using NManager.Views;
+
 namespace NManager;
 
 public partial class App : Application

@@ -6,26 +6,25 @@ using MsBox.Avalonia.Base;
 using MsBox.Avalonia.Enums;
 
 using System;
-using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 
-namespace NManager;
+using NManager.Models;
+
+namespace NManager.Views;
 
 public partial class MainWindow : Window
 {
-    private readonly Stack<string> previousPaths = new(), nextPaths = new();
-    private string currentPath = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
-    private int filesStartIndex = 0;
+    private readonly MainModel model = new();
 
     public MainWindow()
     {
         InitializeComponent();
-        DisplayContent(currentPath);
+        DisplayContent(model.CurrentPath);
 
-        pathTextField.Text = currentPath;
-        backButton.IsEnabled = previousPaths.Count > 0;
-        forwardButton.IsEnabled = nextPaths.Count > 0;
+        pathTextField.Text = model.CurrentPath;
+        backButton.IsEnabled = model.PreviousPaths.Count > 0;
+        forwardButton.IsEnabled = model.NextPaths.Count > 0;
     }
 
     private bool DisplayContent(string currentPath)
@@ -48,7 +47,7 @@ public partial class MainWindow : Window
             }
 
             contentList.ItemsSource = content;
-            filesStartIndex = subdirectories.Length;
+            model.FilesStartIndex = subdirectories.Length;
 
             return true;
         }
@@ -77,8 +76,8 @@ public partial class MainWindow : Window
             totalToolbarButtonsLength += toolbar.Children[i].Bounds.Width;
         }
 
-        pathTextField.Width = this.Width - totalToolbarButtonsLength;
-        contentList.Height = this.Height - toolbar.Bounds.Height;
+        pathTextField.Width = Width - totalToolbarButtonsLength;
+        contentList.Height = Height - toolbar.Bounds.Height;
     }
 
     private void MainWindowLoadedHandler(object? sender, RoutedEventArgs args)
@@ -95,23 +94,23 @@ public partial class MainWindow : Window
     {
         string slash = OperatingSystem.IsWindows() ? "\\" : "/";
 
-        if (contentList.SelectedIndex < filesStartIndex)
+        if (contentList.SelectedIndex < model.FilesStartIndex)
         {
-            string newCurrentPath = currentPath + slash + contentList.SelectedItem;
+            string newCurrentPath = model.CurrentPath + slash + contentList.SelectedItem;
 
             if (DisplayContent(newCurrentPath))
             {
-                previousPaths.Push(currentPath);
+                model.PreviousPaths.Push(model.CurrentPath);
 
-                if (nextPaths.Count != 0)
+                if (model.NextPaths.Count != 0)
                 {
-                    nextPaths.Clear();
+                    model.NextPaths.Clear();
                 }
 
-                currentPath = newCurrentPath;
-                pathTextField.Text = currentPath;
-                backButton.IsEnabled = previousPaths.Count > 0;
-                forwardButton.IsEnabled = nextPaths.Count > 0;
+                model.CurrentPath = newCurrentPath;
+                pathTextField.Text = model.CurrentPath;
+                backButton.IsEnabled = model.PreviousPaths.Count > 0;
+                forwardButton.IsEnabled = model.NextPaths.Count > 0;
             }
         }
         else
@@ -119,7 +118,7 @@ public partial class MainWindow : Window
             Process process = new();
             ProcessStartInfo processStartInfo = new()
             {
-                FileName = currentPath + slash + contentList.SelectedItem,
+                FileName = model.CurrentPath + slash + contentList.SelectedItem,
                 UseShellExecute = true
             };
             process.StartInfo = processStartInfo;
@@ -130,56 +129,56 @@ public partial class MainWindow : Window
 
     private void BackButtonClickHandler(object? sender, RoutedEventArgs args)
     {
-        if (previousPaths.Count > 0)
+        if (model.PreviousPaths.Count > 0)
         {
-            nextPaths.Push(currentPath);
+            model.NextPaths.Push(model.CurrentPath);
 
-            currentPath = previousPaths.Pop();
-            pathTextField.Text = currentPath;
+            model.CurrentPath = model.PreviousPaths.Pop();
+            pathTextField.Text = model.CurrentPath;
 
-            DisplayContent(currentPath);
+            DisplayContent(model.CurrentPath);
         }
 
-        backButton.IsEnabled = previousPaths.Count > 0;
-        forwardButton.IsEnabled = nextPaths.Count > 0;
+        backButton.IsEnabled = model.PreviousPaths.Count > 0;
+        forwardButton.IsEnabled = model.NextPaths.Count > 0;
     }
 
     private void ForwardButtonClickHandler(object? sender, RoutedEventArgs args)
     {
-        if (nextPaths.Count > 0)
+        if (model.NextPaths.Count > 0)
         {
-            previousPaths.Push(currentPath);
+            model.PreviousPaths.Push(model.CurrentPath);
 
-            currentPath = nextPaths.Pop();
-            pathTextField.Text = currentPath;
+            model.CurrentPath = model.NextPaths.Pop();
+            pathTextField.Text = model.CurrentPath;
 
-            DisplayContent(currentPath);
+            DisplayContent(model.CurrentPath);
         }
 
-        backButton.IsEnabled = previousPaths.Count > 0;
-        forwardButton.IsEnabled = nextPaths.Count > 0;
+        backButton.IsEnabled = model.PreviousPaths.Count > 0;
+        forwardButton.IsEnabled = model.NextPaths.Count > 0;
     }
 
     private void ReloadButtonClickHandler(object? sender, RoutedEventArgs args)
     {
-        DisplayContent(currentPath);
+        DisplayContent(model.CurrentPath);
     }
 
     private void PathTextFieldKeyDownHandler(object? sender, KeyEventArgs args)
     {
         if (args.Key == Key.Enter && pathTextField.Text != null && pathTextField.Text.Length > 0 && DisplayContent(pathTextField.Text))
         {
-            previousPaths.Push(currentPath);
+            model.PreviousPaths.Push(model.CurrentPath);
 
-            if (nextPaths.Count != 0)
+            if (model.NextPaths.Count != 0)
             {
-                nextPaths.Clear();
+                model.NextPaths.Clear();
             }
 
-            currentPath = pathTextField.Text;
+            model.CurrentPath = pathTextField.Text;
         }
 
-        backButton.IsEnabled = previousPaths.Count > 0;
-        forwardButton.IsEnabled = nextPaths.Count > 0;
+        backButton.IsEnabled = model.PreviousPaths.Count > 0;
+        forwardButton.IsEnabled = model.NextPaths.Count > 0;
     }
 }
