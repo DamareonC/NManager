@@ -1,4 +1,5 @@
 using Avalonia.Input;
+using CommunityToolkit.Mvvm.ComponentModel;
 using MsBox.Avalonia;
 using MsBox.Avalonia.Base;
 using MsBox.Avalonia.Enums;
@@ -8,7 +9,6 @@ using System.Diagnostics;
 using System.IO;
 
 using NManager.Models;
-using CommunityToolkit.Mvvm.ComponentModel;
 
 namespace NManager.ViewModels;
 
@@ -30,6 +30,8 @@ public partial class MainWindowViewModel : ViewModelBase
 
     public MainWindowViewModel()
     {
+        PathTextFieldText = model.CurrentPath;
+        
         LoadContent(model.CurrentPath);
     }
 
@@ -76,7 +78,8 @@ public partial class MainWindowViewModel : ViewModelBase
 
         if (ContentListSelectedIndex < model.FilesStartIndex)
         {
-            string newCurrentPath = model.CurrentPath + slash + ContentListSelectedItem;
+            bool isRoot = Directory.GetParent(model.CurrentPath) == null;
+            string newCurrentPath = model.CurrentPath + (isRoot ? "" : slash) + ContentListSelectedItem;
 
             if (LoadContent(newCurrentPath))
             {
