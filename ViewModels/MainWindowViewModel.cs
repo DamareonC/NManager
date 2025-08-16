@@ -1,7 +1,6 @@
 using Avalonia.Input;
 using CommunityToolkit.Mvvm.ComponentModel;
 using MsBox.Avalonia;
-using MsBox.Avalonia.Base;
 using MsBox.Avalonia.Enums;
 
 using System;
@@ -20,6 +19,8 @@ public partial class MainWindowViewModel : ViewModelBase
     [ObservableProperty]
     private bool _ForwardButtonIsEnabled;
     [ObservableProperty]
+    private bool _UpButtonIsEnabled;
+    [ObservableProperty]
     private int _ContentListSelectedIndex;
     [ObservableProperty]
     private object? _ContentListSelectedItem;
@@ -31,7 +32,8 @@ public partial class MainWindowViewModel : ViewModelBase
     public MainWindowViewModel()
     {
         PathTextFieldText = model.CurrentPath;
-        
+        UpButtonIsEnabled = CurrentPathHasParent();
+
         LoadContent(model.CurrentPath);
     }
 
@@ -47,8 +49,7 @@ public partial class MainWindowViewModel : ViewModelBase
             LoadContent(model.CurrentPath);
         }
 
-        BackButtonIsEnabled = model.PreviousPaths.Count > 0;
-        ForwardButtonIsEnabled = model.NextPaths.Count > 0;
+        UpdateButtons();
     }
 
     public void OnForwardButtonClick()
@@ -63,8 +64,25 @@ public partial class MainWindowViewModel : ViewModelBase
             LoadContent(model.CurrentPath);
         }
 
-        BackButtonIsEnabled = model.PreviousPaths.Count > 0;
-        ForwardButtonIsEnabled = model.NextPaths.Count > 0;
+        UpdateButtons();
+    }
+
+    public void OnUpButtonClick()
+    {
+        bool hasParent = CurrentPathHasParent();
+        
+        if (hasParent)
+        {
+            string? newCurrentPath = Directory.GetParent(model.CurrentPath)?.FullName;
+
+            if (newCurrentPath != null && LoadContent(newCurrentPath))
+            {
+                SetCurrentPath(newCurrentPath);
+                UpdateButtons();
+
+                PathTextFieldText = model.CurrentPath;
+            }
+        }
     }
 
     public void OnReloadButtonClick()
@@ -74,26 +92,19 @@ public partial class MainWindowViewModel : ViewModelBase
 
     public void OpenFolderOrLaunchFile()
     {
+        bool hasParent = CurrentPathHasParent();
         string slash = OperatingSystem.IsWindows() ? "\\" : "/";
 
         if (ContentListSelectedIndex < model.FilesStartIndex)
         {
-            bool isRoot = Directory.GetParent(model.CurrentPath) == null;
-            string newCurrentPath = model.CurrentPath + (isRoot ? "" : slash) + ContentListSelectedItem;
+            string newCurrentPath = model.CurrentPath + (hasParent ? slash : "") + ContentListSelectedItem;
 
             if (LoadContent(newCurrentPath))
             {
-                model.PreviousPaths.Push(model.CurrentPath);
+                SetCurrentPath(newCurrentPath);                
+                UpdateButtons();
 
-                if (model.NextPaths.Count != 0)
-                {
-                    model.NextPaths.Clear();
-                }
-
-                model.CurrentPath = newCurrentPath;
                 PathTextFieldText = model.CurrentPath;
-                BackButtonIsEnabled = model.PreviousPaths.Count > 0;
-                ForwardButtonIsEnabled = model.NextPaths.Count > 0;
             }
         }
         else
@@ -101,7 +112,7 @@ public partial class MainWindowViewModel : ViewModelBase
             Process process = new();
             ProcessStartInfo processStartInfo = new()
             {
-                FileName = model.CurrentPath + slash + ContentListSelectedItem,
+                FileName = model.CurrentPath + (hasParent ? slash : "") + ContentListSelectedItem,
                 UseShellExecute = true
             };
             process.StartInfo = processStartInfo;
@@ -112,20 +123,31 @@ public partial class MainWindowViewModel : ViewModelBase
 
     public void LoadPathFromPathTextField(KeyEventArgs args)
     {
-        if (args.Key == Key.Enter && PathTextFieldText != null && PathTextFieldText.Length > 0 && LoadContent(PathTextFieldText))
+        if (args.Key == Key.Enter && PathTextFieldText != null && PathTextFieldText.Length > 0 && !PathTextFieldText.Equals(model.CurrentPath) && LoadContent(PathTextFieldText))
         {
-            model.PreviousPaths.Push(model.CurrentPath);
-
-            if (model.NextPaths.Count != 0)
-            {
-                model.NextPaths.Clear();
-            }
-
-            model.CurrentPath = PathTextFieldText;
+            SetCurrentPath(PathTextFieldText);
         }
 
+        UpdateButtons();
+    }
+
+    private void UpdateButtons()
+    {
         BackButtonIsEnabled = model.PreviousPaths.Count > 0;
         ForwardButtonIsEnabled = model.NextPaths.Count > 0;
+        UpButtonIsEnabled = CurrentPathHasParent();
+    }
+
+    private void SetCurrentPath(string newPath)
+    {
+        model.PreviousPaths.Push(model.CurrentPath);
+
+        if (model.NextPaths.Count != 0)
+        {
+            model.NextPaths.Clear();
+        }
+
+        model.CurrentPath = newPath;
     }
 
     private bool LoadContent(string currentPath)
@@ -152,19 +174,42 @@ public partial class MainWindowViewModel : ViewModelBase
 
             return true;
         }
-        catch (DirectoryNotFoundException)
+        catch (Exception e)
         {
-            IMsBox<ButtonResult> messageBox = MessageBoxManager.GetMessageBoxStandard("Could Not Find Folder", "The selected folder could not be found.", ButtonEnum.Ok, MsBox.Avalonia.Enums.Icon.Error);
-            messageBox.ShowAsync();
-
+            ShowErrorMessage(e);
             return false;
         }
-        catch (UnauthorizedAccessException)
-        {
-            IMsBox<ButtonResult> messageBox = MessageBoxManager.GetMessageBoxStandard("Permission Denied", "You do not have permission to open this folder.", ButtonEnum.Ok, MsBox.Avalonia.Enums.Icon.Error);
-            messageBox.ShowAsync();
+    }
 
+    private bool CurrentPathHasParent()
+    {
+        try
+        {
+            return Directory.GetParent(model.CurrentPath) != null;
+        }
+        catch (Exception e)
+        {
+            ShowErrorMessage(e);
             return false;
+        }
+    }
+
+    private static void ShowErrorMessage(Exception e)
+    {
+        switch (e)
+        {
+            case ArgumentException:
+                MessageBoxManager.GetMessageBoxStandard("Invalid Path", "The path contains only spaces or invalid charaters.", ButtonEnum.Ok, Icon.Error).ShowAsync();
+                break;
+            case DirectoryNotFoundException:
+                MessageBoxManager.GetMessageBoxStandard("Could Not Find Folder", "The selected folder could not be found.", ButtonEnum.Ok, Icon.Error).ShowAsync();
+                break;
+            case UnauthorizedAccessException:
+                MessageBoxManager.GetMessageBoxStandard("Permission Denied", "You do not have permission to open this folder.", ButtonEnum.Ok, Icon.Error).ShowAsync();
+                break;
+            default:
+                MessageBoxManager.GetMessageBoxStandard("Error", "An error has occured.", ButtonEnum.Ok, Icon.Error).ShowAsync();
+                break;
         }
     }
 }
