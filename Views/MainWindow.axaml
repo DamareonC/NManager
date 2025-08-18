@@ -22,10 +22,11 @@
 	<StackPanel>
 
 		<StackPanel x:Name="toolbar" Orientation="Horizontal">
-			<Button x:Name="backButton" Command="{Binding OnBackButtonClick}" IsEnabled="{Binding BackButtonIsEnabled, Mode=OneWay}" ToolTip.Tip="Back one folder">&#8592;</Button>
-			<Button x:Name="forwardButton" Command="{Binding OnForwardButtonClick}" IsEnabled="{Binding ForwardButtonIsEnabled, Mode=OneWay}" ToolTip.Tip="Forward one folder">&#8594;</Button>
-			<Button x:Name="upButton" Command="{Binding OnUpButtonClick}" IsEnabled="{Binding UpButtonIsEnabled, Mode=OneWay}" ToolTip.Tip="Up one folder">&#8593;</Button>
-			<Button x:Name="reloadButton" Command="{Binding OnReloadButtonClick}" ToolTip.Tip="Reload current folder">&#8634;</Button>
+			<Button x:Name="backButton" Command="{Binding OnBackButtonClick}" IsEnabled="{Binding BackButtonIsEnabled, Mode=OneWay}" ToolTip.Tip="Go back one folder" Width="32" Height="32">&#8592;</Button>
+			<Button x:Name="forwardButton" Command="{Binding OnForwardButtonClick}" IsEnabled="{Binding ForwardButtonIsEnabled, Mode=OneWay}" ToolTip.Tip="Go forward one folder" Width="32" Height="32">&#8594;</Button>
+			<Button x:Name="upButton" Command="{Binding OnUpButtonClick}" IsEnabled="{Binding UpButtonIsEnabled, Mode=OneWay}" ToolTip.Tip="Go up one folder" Width="32" Height="32">&#8593;</Button>
+			<Button x:Name="homeButton" Command="{Binding OnHomeButtonClick}" IsEnabled="{Binding HomeButtonIsEnabled}" ToolTip.Tip="Go to home folder"  Width="32" Height="32">&#127968;</Button>
+			<Button x:Name="reloadButton" Command="{Binding OnReloadButtonClick}" ToolTip.Tip="Reload the current folder" Width="32" Height="32">&#8634;</Button>
 			<TextBox x:Name="pathTextField" KeyDown="PathTextFieldKeyDown" Text="{Binding PathTextFieldText}" Watermark="Enter absolute path here"></TextBox>
 		</StackPanel>
 		

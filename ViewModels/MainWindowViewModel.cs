@@ -21,6 +21,8 @@ public partial class MainWindowViewModel : ViewModelBase
     [ObservableProperty]
     private bool _UpButtonIsEnabled;
     [ObservableProperty]
+    private bool _HomeButtonIsEnabled;
+    [ObservableProperty]
     private int _ContentListSelectedIndex;
     [ObservableProperty]
     private object? _ContentListSelectedItem;
@@ -31,15 +33,16 @@ public partial class MainWindowViewModel : ViewModelBase
 
     public MainWindowViewModel()
     {
-        PathTextFieldText = model.CurrentPath;
         UpButtonIsEnabled = CurrentPathHasParent();
+        HomeButtonIsEnabled = false;
+        PathTextFieldText = model.CurrentPath;
 
         LoadContent(model.CurrentPath);
     }
 
     public void OnBackButtonClick()
     {
-        if (model.PreviousPaths.Count > 0)
+        if (BackButtonIsEnabled && model.PreviousPaths.Count > 0)
         {
             model.NextPaths.Push(model.CurrentPath);
 
@@ -54,7 +57,7 @@ public partial class MainWindowViewModel : ViewModelBase
 
     public void OnForwardButtonClick()
     {
-        if (model.NextPaths.Count > 0)
+        if (ForwardButtonIsEnabled && model.NextPaths.Count > 0)
         {
             model.PreviousPaths.Push(model.CurrentPath);
 
@@ -71,7 +74,7 @@ public partial class MainWindowViewModel : ViewModelBase
     {
         bool hasParent = CurrentPathHasParent();
         
-        if (hasParent)
+        if (UpButtonIsEnabled && hasParent)
         {
             string? newCurrentPath = Directory.GetParent(model.CurrentPath)?.FullName;
 
@@ -81,6 +84,20 @@ public partial class MainWindowViewModel : ViewModelBase
                 UpdateButtons();
 
                 PathTextFieldText = model.CurrentPath;
+            }
+        }
+    }
+
+    public void OnHomeButtonClick()
+    {
+        if (HomeButtonIsEnabled && !model.CurrentPath.Equals(model.HomePath))
+        {
+            if (LoadContent(model.HomePath))
+            {
+                SetCurrentPath(model.HomePath);
+                UpdateButtons();
+
+                PathTextFieldText = model.HomePath;
             }
         }
     }
@@ -136,6 +153,7 @@ public partial class MainWindowViewModel : ViewModelBase
         BackButtonIsEnabled = model.PreviousPaths.Count > 0;
         ForwardButtonIsEnabled = model.NextPaths.Count > 0;
         UpButtonIsEnabled = CurrentPathHasParent();
+        HomeButtonIsEnabled = !model.CurrentPath.Equals(model.HomePath);
     }
 
     private void SetCurrentPath(string newPath)

@@ -1,6 +1,8 @@
-using System;
 using Avalonia.Controls;
 using Avalonia.Controls.Templates;
+
+using System;
+
 using NManager.ViewModels;
 
 namespace NManager;
