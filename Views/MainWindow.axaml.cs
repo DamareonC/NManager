@@ -43,9 +43,12 @@ public partial class MainWindow : Window
     {
         double totalToolbarButtonsLength = 0;
 
-        for (int i = 0; i < toolbar.Children.Count - 1; i++)
+        for (int i = 0; i < toolbar.Children.Count; i++)
         {
-            totalToolbarButtonsLength += toolbar.Children[i].Bounds.Width;
+            if (toolbar.Children[i] is not TextBox)
+            {
+                totalToolbarButtonsLength += toolbar.Children[i].Bounds.Width;
+            }
         }
 
         pathTextField.Width = Width - totalToolbarButtonsLength;

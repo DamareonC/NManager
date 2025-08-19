@@ -107,6 +107,26 @@ public partial class MainWindowViewModel : ViewModelBase
         LoadContent(model.CurrentPath);
     }
 
+    public void OnAddFileSelect()
+    {
+        
+    }
+
+    public void OnAddFolderSelect()
+    {
+        
+    }
+
+    public void OnTrashItemSelect()
+    {
+        
+    }
+
+    public void OnDeleteItemSelect()
+    {
+        
+    }
+
     public void OpenFolderOrLaunchFile()
     {
         bool hasParent = CurrentPathHasParent();
