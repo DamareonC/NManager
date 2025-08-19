@@ -14,6 +14,7 @@ namespace NManager.ViewModels;
 public partial class MainWindowViewModel : ViewModelBase
 {
     private readonly MainModel model = new();
+    private readonly string slash = OperatingSystem.IsWindows() ? "\\" : "/";
     [ObservableProperty]
     private bool _BackButtonIsEnabled;
     [ObservableProperty]
@@ -22,6 +23,8 @@ public partial class MainWindowViewModel : ViewModelBase
     private bool _UpButtonIsEnabled;
     [ObservableProperty]
     private bool _HomeButtonIsEnabled;
+    [ObservableProperty]
+    private bool _RemoveItemMenuIsEnabled;
     [ObservableProperty]
     private int _ContentListSelectedIndex;
     [ObservableProperty]
@@ -122,15 +125,50 @@ public partial class MainWindowViewModel : ViewModelBase
         
     }
 
-    public void OnDeleteItemSelect()
+    public async void OnDeleteItemSelect()
     {
-        
+        if (ContentListSelectedItem != null)
+        {
+            ButtonResult result = await MessageBoxManager.GetMessageBoxStandard("Permanently Delete", "This will permenantly delete the selected file or folder (and all of its contents), and thus cannot be undone. Do you want to continue?", ButtonEnum.YesNo, Icon.Warning).ShowAsync();
+
+            if (result == ButtonResult.Yes)
+            {
+                bool hasParent = CurrentPathHasParent();
+
+                try
+                {
+                    if (ContentListSelectedIndex < model.FilesStartIndex)
+                    {
+                        Directory.Delete(model.CurrentPath + (hasParent ? slash : "") + ContentListSelectedItem, true);
+                    }
+                    else
+                    {
+                        File.Delete(model.CurrentPath + (hasParent ? slash : "") + ContentListSelectedItem);
+                    }
+                }
+                catch (Exception e)
+                {
+                    ShowErrorMessage(e);
+                }
+
+                LoadContent(model.CurrentPath);
+            }
+        }
+    }
+
+    public void LoadPathFromPathTextField(KeyEventArgs args)
+    {
+        if (args.Key == Key.Enter && PathTextFieldText != null && PathTextFieldText.Length > 0 && !PathTextFieldText.Equals(model.CurrentPath) && LoadContent(PathTextFieldText))
+        {
+            SetCurrentPath(PathTextFieldText);
+        }
+
+        UpdateButtons();
     }
 
     public void OpenFolderOrLaunchFile()
     {
         bool hasParent = CurrentPathHasParent();
-        string slash = OperatingSystem.IsWindows() ? "\\" : "/";
 
         if (ContentListSelectedIndex < model.FilesStartIndex)
         {
@@ -156,16 +194,6 @@ public partial class MainWindowViewModel : ViewModelBase
 
             process.Start();
         }
-    }
-
-    public void LoadPathFromPathTextField(KeyEventArgs args)
-    {
-        if (args.Key == Key.Enter && PathTextFieldText != null && PathTextFieldText.Length > 0 && !PathTextFieldText.Equals(model.CurrentPath) && LoadContent(PathTextFieldText))
-        {
-            SetCurrentPath(PathTextFieldText);
-        }
-
-        UpdateButtons();
     }
 
     private void UpdateButtons()
@@ -240,13 +268,13 @@ public partial class MainWindowViewModel : ViewModelBase
                 MessageBoxManager.GetMessageBoxStandard("Invalid Path", "The path contains only spaces or invalid charaters.", ButtonEnum.Ok, Icon.Error).ShowAsync();
                 break;
             case DirectoryNotFoundException:
-                MessageBoxManager.GetMessageBoxStandard("Could Not Find Folder", "The selected folder could not be found.", ButtonEnum.Ok, Icon.Error).ShowAsync();
+                MessageBoxManager.GetMessageBoxStandard("Could Not Find Folder", "The selected folder could not be found or is invalid.", ButtonEnum.Ok, Icon.Error).ShowAsync();
                 break;
             case UnauthorizedAccessException:
                 MessageBoxManager.GetMessageBoxStandard("Permission Denied", "You do not have permission to open this folder.", ButtonEnum.Ok, Icon.Error).ShowAsync();
                 break;
             default:
-                MessageBoxManager.GetMessageBoxStandard("Error", "An error has occured.", ButtonEnum.Ok, Icon.Error).ShowAsync();
+                MessageBoxManager.GetMessageBoxStandard("Error", "An error has occured: " + e.Message, ButtonEnum.Ok, Icon.Error).ShowAsync();
                 break;
         }
     }

@@ -23,11 +23,11 @@ public partial class MainWindow : Window
         RecalculateContentSize();
     }
 
-    private void ContentListDoubleTapped(object? sender, TappedEventArgs args)
+    private void RemoveItemMenuSelectionChanged(object? sender, SelectionChangedEventArgs args)
     {
         if (DataContext is MainWindowViewModel vm)
         {
-            vm.OpenFolderOrLaunchFile();
+            vm.RemoveItemMenuIsEnabled = vm.ContentListSelectedItem != null;
         }
     }
 
@@ -36,6 +36,14 @@ public partial class MainWindow : Window
         if (DataContext is MainWindowViewModel vm)
         {
             vm.LoadPathFromPathTextField(args);
+        }
+    }
+
+    private void ContentListDoubleTapped(object? sender, TappedEventArgs args)
+    {
+        if (DataContext is MainWindowViewModel vm)
+        {
+            vm.OpenFolderOrLaunchFile();
         }
     }
 

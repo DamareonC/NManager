@@ -36,7 +36,7 @@
 				</MenuItem>
 			</Menu>
 			
-			<Menu x:Name="removeItemMenu" Width="32" Height="32">
+			<Menu x:Name="removeItemMenu" IsEnabled="{Binding RemoveItemMenuIsEnabled, Mode=OneWay}" Width="32" Height="32">
 				<MenuItem Header="&#10134;" ToolTip.Tip="Remove File Or Folder">
 					<MenuItem Header="Move To Trash" Command="{Binding OnTrashItemSelect}"/>
 					<MenuItem Header="Delete Permanently" Command="{Binding OnDeleteItemSelect}"/>
@@ -46,7 +46,7 @@
 		
 		<ScrollViewer>
 			<StackPanel>
-				<ListBox x:Name="contentList" DoubleTapped="ContentListDoubleTapped" ItemsSource="{Binding ContentListItemsSource, Mode=OneWay}" SelectedIndex="{Binding ContentListSelectedIndex}" SelectedItem="{Binding ContentListSelectedItem}"/>
+				<ListBox x:Name="contentList" DoubleTapped="ContentListDoubleTapped" SelectionChanged="RemoveItemMenuSelectionChanged" ItemsSource="{Binding ContentListItemsSource, Mode=OneWay}" SelectedIndex="{Binding ContentListSelectedIndex}" SelectedItem="{Binding ContentListSelectedItem}"/>
 			</StackPanel>
 		</ScrollViewer>
 
