@@ -1,22 +1,40 @@
+#include <glib.h>
 #include <gtk/gtk.h>
 
 #include <stdlib.h>
 #include <string.h>
 
-static void load_dir_entries(GtkWidget* list_box, const char* path)
+static void load_dir_entries(const GtkWidget* const list_box, const char* const path);
+
+static void load_entry_dir(GtkWidget* const widget, const gpointer data)
 {
-    DIR* dir_ptr = opendir(path);
+    const GtkWidget* const list_box = gtk_widget_get_parent(widget);
+    GtkListBoxRow* const list_box_row = GTK_LIST_BOX_ROW(widget);
+    GtkLabel* const label = GTK_LABEL(gtk_list_box_row_get_child(list_box_row));
+    const char* const entry_name = gtk_label_get_text(label);
+    static char new_dir[1024];
+
+    sprintf(new_dir, "%s/%s", (const char*)data, entry_name);
+    load_dir_entries(list_box, new_dir);
+}
+
+static void load_dir_entries(const GtkWidget* const list_box, const char* const path)
+{
+    DIR* const dir_ptr = opendir(path);
 
     if (dir_ptr)
     {
-        struct dirent* dir_ent_ptr;
+        gtk_list_box_remove_all(GTK_LIST_BOX(list_box));
 
-        while ((dir_ent_ptr = readdir(dir_ptr)) != NULL)
+        const struct dirent* dir_ent_ptr;
+
+        while ((dir_ent_ptr = readdir(dir_ptr)))
         {
             if (!strcmp(dir_ent_ptr->d_name, ".") || !strcmp(dir_ent_ptr->d_name, "..")) continue;
 
             GtkWidget* const list_box_row = gtk_list_box_row_new();
             gtk_list_box_append(GTK_LIST_BOX(list_box), list_box_row);
+            g_signal_connect(list_box_row, "activate", G_CALLBACK(load_entry_dir), (gpointer)path);
 
             GtkWidget* const label = gtk_label_new(dir_ent_ptr->d_name);
             gtk_list_box_row_set_child(GTK_LIST_BOX_ROW(list_box_row), label);
@@ -27,7 +45,10 @@ static void load_dir_entries(GtkWidget* list_box, const char* path)
     }
     else
     {
-        perror("ERROR: Unable to read directory. Terminating program.");
+        char error[1024];
+
+        sprintf(error, "ERROR: Unable to read directory %s", path);
+        perror(error);
         exit(EXIT_FAILURE);
     }
 }

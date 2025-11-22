@@ -2,6 +2,7 @@ Now:
 * Display all the entries in a path &check;
     * Order all entries (first all the folders, then the files; all in alphanumeric order)
     * For now, display hidden entries as well; later, it will be a toggle later
+    * Add navigation between paths (half done)
 * Add a search for paths
     * Make sure the path is valid (e.g. no invalid characters, the path exists, etc)
 * Add buttons for forward (next folder), back (previous folder), up (parent folder), and home (home folder)

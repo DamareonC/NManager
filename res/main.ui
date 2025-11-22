@@ -8,7 +8,7 @@
             <object id="scrolled_window" class="GtkScrolledWindow">
                 <child>
                     <object id="entry_list" class="GtkListBox">
-                        <property name="selection-mode">GTK_SELECTION_MULTIPLE</property>
+                        <property name="selection-mode">GTK_SELECTION_SINGLE</property>
                     </object>
                 </child>
             </object>
