@@ -56,6 +56,7 @@ void load_parent_dir(GtkListBox* const list_box)
         }
         else
         {
+            if (current_dir[i] == 0) break;
             if (++c > last_slash) current_dir[i] = 0;
         }
     }

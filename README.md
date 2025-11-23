@@ -13,7 +13,7 @@ NManager is a simple file manager, written in C and using GTK4, that allows you 
 ### Prequisites
 
 * [Git](https://git-scm.com/downloads)
-* [CMake](https://cmake.org/download/) (3.27 or later)
+* [CMake](https://cmake.org/download/) (3.16 or later)
 * [GTK4](https://www.gtk.org/docs/installations/) (for Linux, install the development package)
 * C compiler (e.g. GCC or Clang)
 * A build system (e.g. Make or Ninja)
