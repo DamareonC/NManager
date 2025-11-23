@@ -13,6 +13,8 @@ add_definitions(${GTK4_CFLAGS_OTHER})
 
 add_executable(${PROJECT_NAME}
     ${CMAKE_SOURCE_DIR}/src/App.c
+    ${CMAKE_SOURCE_DIR}/src/Button.c
+    ${CMAKE_SOURCE_DIR}/src/Dir.c
     ${CMAKE_SOURCE_DIR}/src/Main.c
 )
 
