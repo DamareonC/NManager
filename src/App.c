@@ -4,7 +4,7 @@
 
 Globals globals;
 
-static void load_css(void)
+static void s_load_css(void)
 {
     GtkCssProvider* const css_provider = gtk_css_provider_new();
     GdkDisplay* const display = gdk_display_get_default();
@@ -31,7 +31,7 @@ void run(GtkApplication* const app, const gpointer user_data)
         globals.path_entry_buffer = gtk_entry_get_buffer(GTK_ENTRY(gtk_builder_get_object(builder, "path_entry")));
     }
     
-    load_css();
+    s_load_css();
     load_buttons(builder, list_box);
 
     gtk_window_present(main_window);

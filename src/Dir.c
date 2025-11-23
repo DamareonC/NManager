@@ -3,6 +3,20 @@
 
 extern Globals globals;
 
+static void s_load_child(GtkListBox* const list_box, const char* const entry_name)
+{
+    const bool is_root = !strcmp(globals.current_path, "/");
+    char buffer_path[PATH_MAX_SIZE];
+
+    memset(buffer_path, 0, PATH_MAX_SIZE);
+    sprintf(buffer_path, is_root ? "%s%s" : "%s/%s", globals.current_path, entry_name);
+    
+    if (load_dir(list_box, buffer_path))
+    {
+        set_globals(buffer_path);
+    }
+}
+
 bool load_dir(GtkListBox* const list_box, const char* const dir)
 {
     DIR* const dir_ptr = opendir(dir);
@@ -19,10 +33,13 @@ bool load_dir(GtkListBox* const list_box, const char* const dir)
 
             GtkListBoxRow* const list_box_row = GTK_LIST_BOX_ROW(gtk_list_box_row_new());
             gtk_list_box_append(list_box, GTK_WIDGET(list_box_row));
-            g_signal_connect(list_box_row, "activate", G_CALLBACK(load_child), NULL);
+            g_signal_connect(list_box_row, "activate", G_CALLBACK(load_child_activate), NULL);
 
-            GtkLabel* const label = GTK_LABEL(gtk_label_new(dir_ent_ptr->d_name));
-            gtk_list_box_row_set_child(GTK_LIST_BOX_ROW(list_box_row), GTK_WIDGET(label));
+            GtkButton* const button = GTK_BUTTON(gtk_button_new_with_label(dir_ent_ptr->d_name));
+            gtk_list_box_row_set_child(GTK_LIST_BOX_ROW(list_box_row), GTK_WIDGET(button));
+            g_signal_connect(button, "clicked", G_CALLBACK(load_child_clicked), NULL);
+
+            GtkLabel* const label = GTK_LABEL(gtk_button_get_child(button));
             gtk_label_set_xalign(label, 0.0F);
         }
 
@@ -76,21 +93,20 @@ void load_parent(GtkListBox* const list_box)
     }
 }
 
-void load_child(GtkListBoxRow* const list_box_row)
+void load_child_activate(GtkListBoxRow* const list_box_row)
 {
     GtkListBox* const list_box = GTK_LIST_BOX(gtk_widget_get_parent(GTK_WIDGET(list_box_row)));
-    GtkLabel* const label = GTK_LABEL(gtk_list_box_row_get_child(list_box_row));
-    const char* const entry_name = gtk_label_get_text(label);
-    const bool is_root = !strcmp(globals.current_path, "/");
-    char buffer_path[PATH_MAX_SIZE];
+    const char* const entry_name = gtk_button_get_label(GTK_BUTTON(gtk_list_box_row_get_child(list_box_row)));
 
-    memset(buffer_path, 0, PATH_MAX_SIZE);
-    sprintf(buffer_path, is_root ? "%s%s" : "%s/%s", globals.current_path, entry_name);
-    
-    if (load_dir(list_box, buffer_path))
-    {
-        set_globals(buffer_path);
-    }
+    s_load_child(list_box, entry_name);
+}
+
+void load_child_clicked(GtkButton* const button)
+{
+    GtkListBox* const list_box = GTK_LIST_BOX(gtk_widget_get_ancestor(GTK_WIDGET(button), GTK_TYPE_LIST_BOX));
+    const char* const entry_name = gtk_button_get_label(button);
+
+    s_load_child(list_box, entry_name);
 }
 
 void set_globals(const char* const dir)
