@@ -2,6 +2,7 @@
 
 #include <gtk/gtk.h>
 
-void load_current_dir(GtkListBox* const list_box);
-void load_parent_dir(GtkListBox* const list_box);
-void load_child_dir(GtkListBoxRow* const list_box);
+bool load_dir(GtkListBox* const list_box, const char* const dir);
+void load_parent(GtkListBox* const list_box);
+void load_child(GtkListBoxRow* const list_box);
+void set_globals(const char* const dir);

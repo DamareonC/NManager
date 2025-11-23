@@ -30,6 +30,14 @@
                                 </child>
                             </object>
                         </child>
+
+                        <child>
+                            <object id="path_entry" class="GtkEntry">
+                                <property name="hexpand">TRUE</property>
+                                <property name="max-length">1024</property>
+                                <property name="placeholder-text">Enter absolute path here</property>
+                            </object>
+                        </child>
                     </object>
                 </child>
 

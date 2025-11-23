@@ -1,7 +1,8 @@
 #include "Button.h"
 #include "Dir.h"
+#include "Globals.h"
 
-char current_dir[1024];
+Globals globals;
 
 static void load_css(void)
 {
@@ -16,20 +17,23 @@ static void load_css(void)
 
 void run(GtkApplication* const app, const gpointer user_data)
 {
-    sprintf(current_dir, "%s", g_get_home_dir());
-
     GtkBuilder* const builder = gtk_builder_new();
     gtk_builder_add_from_file(builder, "res/main.ui", NULL);
 
-    GtkWindow* const window = GTK_WINDOW(gtk_builder_get_object(builder, "main_window"));
-    gtk_window_set_application(window, app);
+    GtkWindow* const main_window = GTK_WINDOW(gtk_builder_get_object(builder, "main_window"));
+    gtk_window_set_application(main_window, app);
 
     GtkListBox* const list_box = GTK_LIST_BOX(gtk_builder_get_object(builder, "entry_list"));
-    load_current_dir(list_box);
+    
+    if (load_dir(list_box, g_get_home_dir()))
+    {
+        sprintf(globals.current_path, "%s", g_get_home_dir());
+        globals.path_entry_buffer = gtk_entry_get_buffer(GTK_ENTRY(gtk_builder_get_object(builder, "path_entry")));
+    }
     
     load_css();
     load_buttons(builder, list_box);
 
-    gtk_window_present(window);
+    gtk_window_present(main_window);
     g_object_unref(builder);
 }
