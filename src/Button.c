@@ -31,7 +31,7 @@ static void s_path_entry_activate(GtkEntry* const entry, const gpointer data)
 
     if (strcmp(buffer_path, "") && load_dir((GlobalState*)data, buffer_path))
     {
-        gtk_entry_buffer_set_text(entry_buffer, buffer_path, MIN(strlen(buffer_path), PATH_MAX_SIZE));
+        gtk_entry_buffer_set_text(entry_buffer, buffer_path, strnlen(buffer_path, PATH_MAX_SIZE));
         set_global_state((GlobalState*)data, gtk_entry_buffer_get_text(entry_buffer));
     }
 }
