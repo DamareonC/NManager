@@ -3,6 +3,16 @@
 
 extern Globals globals;
 
+static int s_open_file(const char* const file)
+{
+    char command[PATH_MAX_SIZE];
+
+    memset(command, 0, PATH_MAX_SIZE);
+    sprintf(command, "xdg-open '%s'", file);
+
+    return system(command);
+}
+
 static void s_load_child(GtkListBox* const list_box, const char* const entry_name)
 {
     const bool is_root = !strcmp(globals.current_path, "/");
@@ -49,11 +59,14 @@ bool load_dir(GtkListBox* const list_box, const char* const dir)
     }
     else
     {
-        GtkAlertDialog* alert_dialog = gtk_alert_dialog_new("ERROR: Unable to read directory %s: %s", dir, strerror(errno));
-        GtkWindow* window = GTK_WINDOW(gtk_widget_get_ancestor(GTK_WIDGET(list_box), GTK_TYPE_WINDOW));
+        if (errno != ENOTDIR || s_open_file(dir))
+        {
+            GtkAlertDialog* alert_dialog = gtk_alert_dialog_new("ERROR: Unable to open %s: %s", dir, strerror(errno));
+            GtkWindow* window = GTK_WINDOW(gtk_widget_get_ancestor(GTK_WIDGET(list_box), GTK_TYPE_WINDOW));
 
-        gtk_alert_dialog_show(alert_dialog, window);
-        g_object_unref(alert_dialog);
+            gtk_alert_dialog_show(alert_dialog, window);
+            g_object_unref(alert_dialog);
+        }
 
         return false;
     }
