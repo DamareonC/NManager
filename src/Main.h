@@ -10,9 +10,9 @@ static GlobalState* s_load_global_state(GtkBuilder* builder)
     global_state.entry_list = GTK_LIST_BOX(gtk_builder_get_object(builder, "entry_list"));
     global_state.path_entry_buffer = gtk_entry_get_buffer(GTK_ENTRY(gtk_builder_get_object(builder, "path_entry")));
 
-    gtk_entry_buffer_set_text(global_state.path_entry_buffer, home_dir, strlen(home_dir));
+    gtk_entry_buffer_set_text(global_state.path_entry_buffer, home_dir, MIN(strlen(home_dir), PATH_MAX_SIZE));
     memset(global_state.current_path, 0, PATH_MAX_SIZE);
-    strcpy(global_state.current_path, home_dir);
+    strncpy(global_state.current_path, home_dir, PATH_MAX_SIZE);
 
     return &global_state;
 }

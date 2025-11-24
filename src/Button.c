@@ -21,17 +21,17 @@ static void s_path_entry_activate(GtkEntry* const entry, const gpointer data)
     char buffer_path[PATH_MAX_SIZE];
 
     memset(buffer_path, 0, PATH_MAX_SIZE);
-    strcpy(buffer_path, current_text);
+    strncpy(buffer_path, current_text, PATH_MAX_SIZE);
 
-    while (current_text[last_index] == '/')
+    while (current_text[last_index] == '/' && last_index > 0)
     {
         buffer_path[last_index] = 0;
         last_index--;
     }
 
-    if (load_dir((GlobalState*)data, buffer_path))
+    if (strcmp(buffer_path, "") && load_dir((GlobalState*)data, buffer_path))
     {
-        gtk_entry_buffer_set_text(entry_buffer, buffer_path, strlen(buffer_path));
+        gtk_entry_buffer_set_text(entry_buffer, buffer_path, MIN(strlen(buffer_path), PATH_MAX_SIZE));
         set_global_state((GlobalState*)data, gtk_entry_buffer_get_text(entry_buffer));
     }
 }
