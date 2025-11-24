@@ -1,7 +1,5 @@
 #include "Dir.h"
-#include "Globals.h"
-
-extern Globals globals;
+#include "GlobalState.h"
 
 static int s_open_file(const char* const file)
 {
@@ -13,27 +11,27 @@ static int s_open_file(const char* const file)
     return system(command);
 }
 
-static void s_load_child(GtkListBox* const list_box, const char* const entry_name)
+static void s_load_child(GlobalState* const global_state, const char* const entry_name)
 {
-    const bool is_root = !strcmp(globals.current_path, "/");
+    const bool is_root = !strcmp(global_state->current_path, "/");
     char buffer_path[PATH_MAX_SIZE];
 
     memset(buffer_path, 0, PATH_MAX_SIZE);
-    sprintf(buffer_path, is_root ? "%s%s" : "%s/%s", globals.current_path, entry_name);
+    sprintf(buffer_path, is_root ? "%s%s" : "%s/%s", global_state->current_path, entry_name);
     
-    if (load_dir(list_box, buffer_path))
+    if (load_dir(global_state, buffer_path))
     {
-        set_globals(buffer_path);
+        set_global_state(global_state, buffer_path);
     }
 }
 
-bool load_dir(GtkListBox* const list_box, const char* const dir)
+bool load_dir(GlobalState* const global_state, const char* const dir)
 {
     DIR* const dir_ptr = opendir(dir);
 
     if (dir_ptr)
     {
-        gtk_list_box_remove_all(list_box);
+        gtk_list_box_remove_all(global_state->entry_list);
 
         const struct dirent* dir_ent_ptr;
 
@@ -42,12 +40,12 @@ bool load_dir(GtkListBox* const list_box, const char* const dir)
             if (!strcmp(dir_ent_ptr->d_name, ".") || !strcmp(dir_ent_ptr->d_name, "..")) continue;
 
             GtkListBoxRow* const list_box_row = GTK_LIST_BOX_ROW(gtk_list_box_row_new());
-            gtk_list_box_append(list_box, GTK_WIDGET(list_box_row));
-            g_signal_connect(list_box_row, "activate", G_CALLBACK(load_child_activate), NULL);
+            gtk_list_box_append(global_state->entry_list, GTK_WIDGET(list_box_row));
+            g_signal_connect(list_box_row, "activate", G_CALLBACK(load_child_activate), (gpointer)global_state);
 
             GtkButton* const button = GTK_BUTTON(gtk_button_new_with_label(dir_ent_ptr->d_name));
             gtk_list_box_row_set_child(GTK_LIST_BOX_ROW(list_box_row), GTK_WIDGET(button));
-            g_signal_connect(button, "clicked", G_CALLBACK(load_child_clicked), NULL);
+            g_signal_connect(button, "clicked", G_CALLBACK(load_child_clicked), (gpointer)global_state);
 
             GtkLabel* const label = GTK_LABEL(gtk_button_get_child(button));
             gtk_label_set_xalign(label, 0.0F);
@@ -62,7 +60,7 @@ bool load_dir(GtkListBox* const list_box, const char* const dir)
         if (errno != ENOTDIR || s_open_file(dir))
         {
             GtkAlertDialog* alert_dialog = gtk_alert_dialog_new("ERROR: Unable to open %s: %s", dir, strerror(errno));
-            GtkWindow* window = GTK_WINDOW(gtk_widget_get_ancestor(GTK_WIDGET(list_box), GTK_TYPE_WINDOW));
+            GtkWindow* window = GTK_WINDOW(gtk_widget_get_ancestor(GTK_WIDGET(global_state->entry_list), GTK_TYPE_WINDOW));
 
             gtk_alert_dialog_show(alert_dialog, window);
             g_object_unref(alert_dialog);
@@ -72,13 +70,13 @@ bool load_dir(GtkListBox* const list_box, const char* const dir)
     }
 }
 
-void load_parent(GtkListBox* const list_box)
+void load_parent(GlobalState* const global_state)
 {
-    if (!strcmp(globals.current_path, "/")) return;
+    if (!strcmp(global_state->current_path, "/")) return;
 
-    const char* const last_slash = strrchr(globals.current_path, '/');
-    const char* c = globals.current_path;
-    const bool root_is_parent_dir = strchr(globals.current_path, '/') == last_slash;
+    const char* const last_slash = strrchr(global_state->current_path, '/');
+    const char* c = global_state->current_path;
+    const bool root_is_parent_dir = strchr(global_state->current_path, '/') == last_slash;
     char buffer_path[PATH_MAX_SIZE];
 
     memset(buffer_path, 0, PATH_MAX_SIZE);
@@ -93,38 +91,31 @@ void load_parent(GtkListBox* const list_box)
         {
             if (c != last_slash)
             {
-                buffer_path[i] = globals.current_path[i];
+                buffer_path[i] = global_state->current_path[i];
                 c++;
             }
             else break;
         }
     }
 
-    if (load_dir(list_box, buffer_path))
+    if (load_dir(global_state, buffer_path))
     {
-        set_globals(buffer_path);
+        set_global_state(global_state, buffer_path);
     }
 }
 
-void load_child_activate(GtkListBoxRow* const list_box_row)
+void load_child_activate(GtkListBoxRow* const list_box_row, const gpointer data)
 {
     GtkListBox* const list_box = GTK_LIST_BOX(gtk_widget_get_parent(GTK_WIDGET(list_box_row)));
     const char* const entry_name = gtk_button_get_label(GTK_BUTTON(gtk_list_box_row_get_child(list_box_row)));
 
-    s_load_child(list_box, entry_name);
+    s_load_child((GlobalState*)data, entry_name);
 }
 
-void load_child_clicked(GtkButton* const button)
+void load_child_clicked(GtkButton* const button, const gpointer data)
 {
     GtkListBox* const list_box = GTK_LIST_BOX(gtk_widget_get_ancestor(GTK_WIDGET(button), GTK_TYPE_LIST_BOX));
     const char* const entry_name = gtk_button_get_label(button);
 
-    s_load_child(list_box, entry_name);
-}
-
-void set_globals(const char* const dir)
-{
-    memset(globals.current_path, 0, PATH_MAX_SIZE);
-    strcpy(globals.current_path, dir);
-    gtk_entry_buffer_set_text(globals.path_entry_buffer, dir, strlen(dir));
+    s_load_child((GlobalState*)data, entry_name);
 }

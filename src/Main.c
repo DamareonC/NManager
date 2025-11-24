@@ -1,6 +1,4 @@
-#include <gtk/gtk.h>
-
-extern void run(GtkApplication* const app, const gpointer user_data);
+#include "Main.h"
 
 int main(int argc, char* argv[])
 {

@@ -2,4 +2,6 @@
 
 #include <gtk/gtk.h>
 
-void load_buttons(GtkBuilder* const builder, const GtkListBox* const list_box);
+#include "GlobalState.h"
+
+void load_buttons(GtkBuilder* const builder, GlobalState* const global_state);

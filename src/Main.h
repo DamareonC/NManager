@@ -1,8 +1,21 @@
 #include "Button.h"
 #include "Dir.h"
-#include "Globals.h"
+#include "GlobalState.h"
 
-Globals globals;
+static GlobalState* s_load_global_state(GtkBuilder* builder)
+{
+    static GlobalState global_state;
+    const char* const home_dir = g_get_home_dir();
+
+    global_state.entry_list = GTK_LIST_BOX(gtk_builder_get_object(builder, "entry_list"));
+    global_state.path_entry_buffer = gtk_entry_get_buffer(GTK_ENTRY(gtk_builder_get_object(builder, "path_entry")));
+
+    gtk_entry_buffer_set_text(global_state.path_entry_buffer, home_dir, strlen(home_dir));
+    memset(global_state.current_path, 0, PATH_MAX_SIZE);
+    strcpy(global_state.current_path, home_dir);
+
+    return &global_state;
+}
 
 static void s_load_css(void)
 {
@@ -15,7 +28,7 @@ static void s_load_css(void)
     g_object_unref(css_provider);
 }
 
-void run(GtkApplication* const app, const gpointer user_data)
+static void run(GtkApplication* const app, const gpointer user_data)
 {
     GtkBuilder* const builder = gtk_builder_new();
     gtk_builder_add_from_file(builder, "res/main.ui", NULL);
@@ -23,16 +36,11 @@ void run(GtkApplication* const app, const gpointer user_data)
     GtkWindow* const main_window = GTK_WINDOW(gtk_builder_get_object(builder, "main_window"));
     gtk_window_set_application(main_window, app);
 
-    GtkListBox* const list_box = GTK_LIST_BOX(gtk_builder_get_object(builder, "entry_list"));
-    
-    if (load_dir(list_box, g_get_home_dir()))
-    {
-        sprintf(globals.current_path, "%s", g_get_home_dir());
-        globals.path_entry_buffer = gtk_entry_get_buffer(GTK_ENTRY(gtk_builder_get_object(builder, "path_entry")));
-    }
+    GlobalState* const global_state = s_load_global_state(builder);
+    load_dir(global_state, global_state->current_path);
     
     s_load_css();
-    load_buttons(builder, list_box);
+    load_buttons(builder, global_state);
 
     gtk_window_present(main_window);
     g_object_unref(builder);
