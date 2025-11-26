@@ -1,11 +1,11 @@
 Now:
 * Display all the entries in a path &check;
     * Order all entries (first all the folders, then the files; all in alphanumeric order) &check;
-    * For now, display hidden entries as well; later, it will be a toggle later
+    * For now, display hidden entries as well; later, it will be a toggle
     * Add navigation between paths &check;
 * Add a search for paths &check;
     * Make sure the path is valid (e.g. no invalid characters, the path exists, etc)
-* Add buttons for forward (next folder), back (previous folder), up (parent folder) &check;, home (home folder) &check;, and refresh (same folder)
+* Add buttons for forward (next folder), back (previous folder), up (parent folder) &check;, home (home folder) &check;, and refresh (same folder) &check;
     * The forward/back buttons should be disabled if there are no next/previous folders
     * The up button should be disabled if the current path is the root folder
     * The home button should be disabled if the current path is the home folder
