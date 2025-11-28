@@ -4,16 +4,12 @@
 
 static void s_load_child(GlobalState* const global_state, const char* const entry_name)
 {
-    const bool is_root = !strcmp(global_state->current_path, "/");
+    const bool is_root = !strncmp(global_state->current_path, "/", PATH_MAX_SIZE);
     char buffer_path[PATH_MAX_SIZE];
 
     memset(buffer_path, 0, PATH_MAX_SIZE);
     snprintf(buffer_path, PATH_MAX_SIZE, is_root ? "%s%s" : "%s/%s", global_state->current_path, entry_name);
-    
-    if (load_directory(global_state, buffer_path))
-    {
-        set_global_state(global_state, buffer_path);
-    }
+    load_directory_and_set_state(global_state, buffer_path);
 }
 
 static int s_open_file(const char* const file)
@@ -24,6 +20,14 @@ static int s_open_file(const char* const file)
     snprintf(command, PATH_MAX_SIZE, "xdg-open '%s'", file);
 
     return system(command);
+}
+
+void load_directory_and_set_state(GlobalState* const global_state, const char* const path)
+{
+    if (load_directory(global_state, path))
+    {
+        set_global_state(global_state, path);
+    }
 }
 
 bool load_directory(GlobalState* const global_state, const char* const path)
@@ -42,6 +46,8 @@ bool load_directory(GlobalState* const global_state, const char* const path)
 
             for (gint i = 0; i < entries->len; i++)
             {
+                if (!global_state->show_hidden && g_array_index(entries, Entry, i).is_hidden) continue;
+
                 GtkListBoxRow* const list_box_row = GTK_LIST_BOX_ROW(gtk_list_box_row_new());
                 gtk_list_box_append(global_state->entry_list, GTK_WIDGET(list_box_row));
                 g_signal_connect(list_box_row, "activate", G_CALLBACK(load_child_activate), global_state);
@@ -82,7 +88,7 @@ bool load_directory(GlobalState* const global_state, const char* const path)
 
 void load_parent(GlobalState* const global_state)
 {
-    if (!strcmp(global_state->current_path, "/")) return;
+    if (!strncmp(global_state->current_path, "/", PATH_MAX_SIZE)) return;
 
     const char* const last_slash = strrchr(global_state->current_path, '/');
     const char* c = global_state->current_path;
@@ -108,10 +114,7 @@ void load_parent(GlobalState* const global_state)
         }
     }
 
-    if (load_directory(global_state, buffer_path))
-    {
-        set_global_state(global_state, buffer_path);
-    }
+    load_directory_and_set_state(global_state, buffer_path);
 }
 
 void load_child_activate(GtkListBoxRow* const list_box_row, GlobalState* const data)

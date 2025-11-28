@@ -7,6 +7,7 @@ void alert_error(const GlobalState* const global_state, const char* const path)
 
     gtk_alert_dialog_show(alert_dialog, window);
     g_object_unref(alert_dialog);
+    
     alert_dialog = NULL;
 }
 

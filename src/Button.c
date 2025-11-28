@@ -2,27 +2,26 @@
 #include "Directory.h"
 #include "GlobalState.h"
 
-static void s_up_button_clicked(const GtkButton* const button, GlobalState* const data)
+static void s_up_button_clicked(const GtkButton* const button, GlobalState* const global_state)
 {
-    load_parent(data);
+    load_parent(global_state);
 }
 
-static void s_home_button_clicked(const GtkButton* const button, GlobalState* const data)
+static void s_home_button_clicked(const GtkButton* const button, GlobalState* const global_state)
 {
-    load_directory(data, g_get_home_dir());
-    set_global_state(data, g_get_home_dir());
+    load_directory_and_set_state(global_state, g_get_home_dir());
 }
 
-static void s_refresh_button_clicked(const GtkButton* const button, GlobalState* const data)
+static void s_refresh_button_clicked(const GtkButton* const button, GlobalState* const global_state)
 {
-    load_directory(data, ((GlobalState*)data)->current_path);
+    load_directory(global_state, global_state->current_path);
 }
 
-static void s_path_entry_activate(GtkEntry* const entry, GlobalState* const data)
+static void s_path_entry_activate(GtkEntry* const entry, GlobalState* const global_state)
 {
     GtkEntryBuffer* const entry_buffer = gtk_entry_get_buffer(entry);
     const char* const current_text = gtk_entry_buffer_get_text(entry_buffer);
-    long last_index = strlen(current_text) - 1;
+    long last_index = strnlen(current_text, PATH_MAX_SIZE) - 1;
     char buffer_path[PATH_MAX_SIZE];
 
     memset(buffer_path, 0, PATH_MAX_SIZE);
@@ -34,10 +33,10 @@ static void s_path_entry_activate(GtkEntry* const entry, GlobalState* const data
         last_index--;
     }
 
-    if (strcmp(buffer_path, "") && load_directory(data, buffer_path))
+    if (strncmp(buffer_path, "", PATH_MAX_SIZE) && load_directory(global_state, buffer_path))
     {
         gtk_entry_buffer_set_text(entry_buffer, buffer_path, strnlen(buffer_path, PATH_MAX_SIZE));
-        set_global_state(data, gtk_entry_buffer_get_text(entry_buffer));
+        set_global_state(global_state, gtk_entry_buffer_get_text(entry_buffer));
     }
 }
 

@@ -48,11 +48,31 @@
                                 <property name="placeholder-text">Enter absolute path here</property>
                             </object>
                         </child>
+
+                        <child>
+                            <object class="GtkMenuButton">
+                                <property name="direction">GTK_ARROW_RIGHT</property>
+                                <property name="popover">
+                                    <object class="GtkPopoverMenu">
+                                        <property name="menu-model">
+                                            <menu>
+                                                <section>
+                                                    <item>
+                                                        <attribute name='label' translatable='yes'>Show Hidden</attribute>
+                                                        <attribute name='action'>app.show-hidden</attribute>
+                                                    </item>
+                                                </section>
+                                            </menu>
+                                        </property>
+                                    </object>
+                                </property>
+                            </object>
+                        </child>
                     </object>
                 </child>
 
                 <child>
-                    <object id="scrolled_window" class="GtkScrolledWindow">
+                    <object class="GtkScrolledWindow">
                         <property name="vexpand">TRUE</property>
 
                         <child>

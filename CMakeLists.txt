@@ -17,6 +17,7 @@ add_executable(${PROJECT_NAME}
     ${CMAKE_SOURCE_DIR}/src/Entry.c
     ${CMAKE_SOURCE_DIR}/src/GlobalState.c
     ${CMAKE_SOURCE_DIR}/src/Main.c
+    ${CMAKE_SOURCE_DIR}/src/Menu.c
 )
 
 target_link_libraries(${PROJECT_NAME} ${GTK4_LIBRARIES})

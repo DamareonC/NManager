@@ -1,14 +1,16 @@
 #include "Button.h"
 #include "Directory.h"
 #include "GlobalState.h"
+#include "Menu.h"
 
-static GlobalState* s_load_global_state(GtkBuilder* builder)
+static GlobalState* s_load_global_state(GtkBuilder* const builder)
 {
     static GlobalState global_state;
     const char* const home_path = g_get_home_dir();
 
     global_state.entry_list = GTK_LIST_BOX(gtk_builder_get_object(builder, "entry_list"));
     global_state.path_entry_buffer = gtk_entry_get_buffer(GTK_ENTRY(gtk_builder_get_object(builder, "path_entry")));
+    global_state.show_hidden = false;
 
     gtk_entry_buffer_set_text(global_state.path_entry_buffer, home_path, strnlen(home_path, PATH_MAX_SIZE));
     memset(global_state.current_path, 0, PATH_MAX_SIZE);
@@ -20,17 +22,19 @@ static GlobalState* s_load_global_state(GtkBuilder* builder)
 static void s_load_css(void)
 {
     GtkCssProvider* css_provider = gtk_css_provider_new();
-    GdkDisplay* const display = gdk_display_get_default();
-    GFile* const css_file_ptr = g_file_new_for_path("res/main.css");
+    GFile* css_file_ptr = g_file_new_for_path("res/main.css");
 
     gtk_css_provider_load_from_file(css_provider, css_file_ptr);
-    gtk_style_context_add_provider_for_display(display, GTK_STYLE_PROVIDER(css_provider), GTK_STYLE_PROVIDER_PRIORITY_APPLICATION);
+    gtk_style_context_add_provider_for_display(gdk_display_get_default(), GTK_STYLE_PROVIDER(css_provider), GTK_STYLE_PROVIDER_PRIORITY_APPLICATION);
+    
     g_object_unref(css_provider);
+    g_object_unref(css_file_ptr);
 
     css_provider = NULL;
+    css_file_ptr = NULL;
 }
 
-static void run(GtkApplication* const app, const gpointer user_data)
+static void run(GtkApplication* const app, const gconstpointer user_data)
 {
     GtkBuilder* builder = gtk_builder_new();
     gtk_builder_add_from_file(builder, "res/main.ui", NULL);
@@ -43,6 +47,7 @@ static void run(GtkApplication* const app, const gpointer user_data)
     
     s_load_css();
     load_buttons(builder, global_state);
+    load_menu(app, global_state);
 
     gtk_window_present(main_window);
     g_object_unref(builder);

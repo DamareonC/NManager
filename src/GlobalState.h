@@ -9,6 +9,7 @@ typedef struct
     GtkListBox* entry_list;
     GtkEntryBuffer* path_entry_buffer;
     char current_path[PATH_MAX_SIZE];
+    bool show_hidden;
 } GlobalState;
 
 void alert_error(const GlobalState* const global_state, const char* const path);

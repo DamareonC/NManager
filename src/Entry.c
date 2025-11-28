@@ -1,35 +1,36 @@
 #include "sys/stat.h"
 
 #include "Entry.h"
+#include "GlobalState.h"
 
-static gint s_sort_entries_by_name(gconstpointer l, gconstpointer r)
+static gint s_sort_entries_by_name(const gconstpointer left, const gconstpointer right)
 {
-    const Entry* const ent_l = l;
-    const Entry* const ent_r = r;
+    const Entry* const left_entry = left;
+    const Entry* const right_entry = right;
 
-    return strcmp(ent_l->name, ent_r->name);
+    return strncmp(left_entry->name, right_entry->name, PATH_MAX_SIZE);
 }
 
-static gint s_sort_entries_by_type(gconstpointer l, gconstpointer r)
+static gint s_sort_entries_by_type(const gconstpointer left, const gconstpointer right)
 {
-    const Entry* const ent_l = l;
-    const Entry* const ent_r = r;
+    const Entry* const left_entry = left;
+    const Entry* const right_entry = right;
 
-    if (ent_l->is_directory && !ent_r->is_directory) return -1;
-    else if (!ent_l->is_directory && ent_r->is_directory) return 1;
+    if (left_entry->is_directory && !right_entry->is_directory) return -1;
+    else if (!left_entry->is_directory && right_entry->is_directory) return 1;
     else return 0;
 }
 
-void load_entries(GlobalState* const global_state, DIR* const directory, GArray* const entries, const char* const path)
+void load_entries(const GlobalState* const global_state, DIR* const directory, GArray* const entries, const char* const path)
 {
     const struct dirent* directory_entry;
     struct stat entry_stats;
     char full_path[PATH_MAX_SIZE];
-    const bool is_root = !strcmp(path, "/");
+    const bool is_root = !strncmp(path, "/", PATH_MAX_SIZE);
 
     while ((directory_entry = readdir(directory)))
     {
-        if (!strcmp(directory_entry->d_name, ".") || !strcmp(directory_entry->d_name, "..")) continue;
+        if (!strncmp(directory_entry->d_name, ".", PATH_MAX_SIZE) || !strncmp(directory_entry->d_name, "..", PATH_MAX_SIZE)) continue;
         
         snprintf(full_path, PATH_MAX_SIZE, is_root ? "%s%s" : "%s/%s", path, directory_entry->d_name);
         
@@ -40,9 +41,9 @@ void load_entries(GlobalState* const global_state, DIR* const directory, GArray*
         }
 
         Entry ent = {
-            directory_entry->d_name,
-            S_ISDIR(entry_stats.st_mode),
-            directory_entry->d_name[0] == '.'
+            .name = directory_entry->d_name,
+            .is_directory = S_ISDIR(entry_stats.st_mode),
+            .is_hidden = directory_entry->d_name[0] == '.'
         };
 
         g_array_append_val(entries, ent);
