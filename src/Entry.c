@@ -2,13 +2,14 @@
 
 #include "Entry.h"
 #include "GlobalState.h"
+#include <string.h>
 
 static gint s_sort_entries_by_name(const gconstpointer left, const gconstpointer right)
 {
     const Entry* const left_entry = left;
     const Entry* const right_entry = right;
 
-    return strncmp(left_entry->name, right_entry->name, PATH_MAX_SIZE);
+    return strncmp(left_entry->name, right_entry->name, NAME_MAX_LENGTH);
 }
 
 static gint s_sort_entries_by_type(const gconstpointer left, const gconstpointer right)
@@ -25,14 +26,15 @@ void load_entries(const GlobalState* const global_state, DIR* const directory, G
 {
     const struct dirent* directory_entry;
     struct stat entry_stats;
-    char full_path[PATH_MAX_SIZE];
-    const bool is_root = !strncmp(path, "/", PATH_MAX_SIZE);
+    char full_path[PATH_MAX_LENGTH];
+    const bool is_root = !strncmp(path, "/", PATH_MAX_LENGTH);
 
     while ((directory_entry = readdir(directory)))
     {
-        if (!strncmp(directory_entry->d_name, ".", PATH_MAX_SIZE) || !strncmp(directory_entry->d_name, "..", PATH_MAX_SIZE)) continue;
-        
-        snprintf(full_path, PATH_MAX_SIZE, is_root ? "%s%s" : "%s/%s", path, directory_entry->d_name);
+        if (!strncmp(directory_entry->d_name, ".", PATH_MAX_LENGTH) || !strncmp(directory_entry->d_name, "..", PATH_MAX_LENGTH)) continue;
+
+        memset(full_path, 0, PATH_MAX_LENGTH);
+        snprintf(full_path, PATH_MAX_LENGTH, is_root ? "%s%s" : "%s/%s", path, directory_entry->d_name);
         
         if (stat(full_path, &entry_stats) != 0)
         {
@@ -40,13 +42,14 @@ void load_entries(const GlobalState* const global_state, DIR* const directory, G
             continue;
         }
 
-        Entry ent = {
-            .name = directory_entry->d_name,
+        Entry entry = {
             .is_directory = S_ISDIR(entry_stats.st_mode),
             .is_hidden = directory_entry->d_name[0] == '.'
         };
 
-        g_array_append_val(entries, ent);
+        strncpy(entry.name, directory_entry->d_name, NAME_MAX_LENGTH);
+
+        g_array_append_val(entries, entry);
     }
 
     g_array_sort(entries, s_sort_entries_by_name);

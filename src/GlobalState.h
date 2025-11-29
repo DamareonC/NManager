@@ -2,13 +2,13 @@
 
 #include <gtk/gtk.h>
 
-#define PATH_MAX_SIZE 1024
+#define PATH_MAX_LENGTH 1024
 
 typedef struct
 {
     GtkListBox* entry_list;
     GtkEntryBuffer* path_entry_buffer;
-    char current_path[PATH_MAX_SIZE];
+    char current_path[PATH_MAX_LENGTH];
     bool show_hidden;
 } GlobalState;
 

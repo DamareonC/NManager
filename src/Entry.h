@@ -2,9 +2,11 @@
 
 #include "GlobalState.h"
 
+#define NAME_MAX_LENGTH 256
+
 typedef struct
 {
-    const char* const name;
+    char name[NAME_MAX_LENGTH];
     const bool is_directory;
     const bool is_hidden;
 } Entry;

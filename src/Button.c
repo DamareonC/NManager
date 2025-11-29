@@ -21,11 +21,11 @@ static void s_path_entry_activate(GtkEntry* const entry, GlobalState* const glob
 {
     GtkEntryBuffer* const entry_buffer = gtk_entry_get_buffer(entry);
     const char* const current_text = gtk_entry_buffer_get_text(entry_buffer);
-    long last_index = strnlen(current_text, PATH_MAX_SIZE) - 1;
-    char buffer_path[PATH_MAX_SIZE];
+    long last_index = strnlen(current_text, PATH_MAX_LENGTH) - 1;
+    char buffer_path[PATH_MAX_LENGTH];
 
-    memset(buffer_path, 0, PATH_MAX_SIZE);
-    strncpy(buffer_path, current_text, PATH_MAX_SIZE);
+    memset(buffer_path, 0, PATH_MAX_LENGTH);
+    strncpy(buffer_path, current_text, PATH_MAX_LENGTH);
 
     while (current_text[last_index] == '/' && last_index > 0)
     {
@@ -33,9 +33,9 @@ static void s_path_entry_activate(GtkEntry* const entry, GlobalState* const glob
         last_index--;
     }
 
-    if (strncmp(buffer_path, "", PATH_MAX_SIZE) && load_directory(global_state, buffer_path))
+    if (strncmp(buffer_path, "", PATH_MAX_LENGTH) && load_directory(global_state, buffer_path))
     {
-        gtk_entry_buffer_set_text(entry_buffer, buffer_path, strnlen(buffer_path, PATH_MAX_SIZE));
+        gtk_entry_buffer_set_text(entry_buffer, buffer_path, strnlen(buffer_path, PATH_MAX_LENGTH));
         set_global_state(global_state, gtk_entry_buffer_get_text(entry_buffer));
     }
 }

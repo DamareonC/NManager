@@ -4,20 +4,20 @@
 
 static void s_load_child(GlobalState* const global_state, const char* const entry_name)
 {
-    const bool is_root = !strncmp(global_state->current_path, "/", PATH_MAX_SIZE);
-    char buffer_path[PATH_MAX_SIZE];
+    const bool is_root = !strncmp(global_state->current_path, "/", PATH_MAX_LENGTH);
+    char buffer_path[PATH_MAX_LENGTH];
 
-    memset(buffer_path, 0, PATH_MAX_SIZE);
-    snprintf(buffer_path, PATH_MAX_SIZE, is_root ? "%s%s" : "%s/%s", global_state->current_path, entry_name);
+    memset(buffer_path, 0, PATH_MAX_LENGTH);
+    snprintf(buffer_path, PATH_MAX_LENGTH, is_root ? "%s%s" : "%s/%s", global_state->current_path, entry_name);
     load_directory_and_set_state(global_state, buffer_path);
 }
 
 static int s_open_file(const char* const file)
 {
-    char command[PATH_MAX_SIZE];
+    char command[PATH_MAX_LENGTH];
 
-    memset(command, 0, PATH_MAX_SIZE);
-    snprintf(command, PATH_MAX_SIZE, "xdg-open '%s'", file);
+    memset(command, 0, PATH_MAX_LENGTH);
+    snprintf(command, PATH_MAX_LENGTH, "xdg-open '%s'", file);
 
     return system(command);
 }
@@ -88,14 +88,14 @@ bool load_directory(GlobalState* const global_state, const char* const path)
 
 void load_parent(GlobalState* const global_state)
 {
-    if (!strncmp(global_state->current_path, "/", PATH_MAX_SIZE)) return;
+    if (!strncmp(global_state->current_path, "/", PATH_MAX_LENGTH)) return;
 
     const char* const last_slash = strrchr(global_state->current_path, '/');
     const char* c = global_state->current_path;
     const bool root_is_parent_dir = strchr(global_state->current_path, '/') == last_slash;
-    char buffer_path[PATH_MAX_SIZE];
+    char buffer_path[PATH_MAX_LENGTH];
 
-    memset(buffer_path, 0, PATH_MAX_SIZE);
+    memset(buffer_path, 0, PATH_MAX_LENGTH);
 
     if (root_is_parent_dir)
     {
@@ -103,7 +103,7 @@ void load_parent(GlobalState* const global_state)
     }
     else
     {
-        for (size_t i = 0; i < PATH_MAX_SIZE; i++)
+        for (size_t i = 0; i < PATH_MAX_LENGTH; i++)
         {
             if (c != last_slash)
             {
