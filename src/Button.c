@@ -1,10 +1,9 @@
 #include "Button.h"
 #include "Directory.h"
-#include "GlobalState.h"
 
 static void s_up_button_clicked(const GtkButton* const button, GlobalState* const global_state)
 {
-    load_parent(global_state);
+    load_parent_directory(global_state);
 }
 
 static void s_home_button_clicked(const GtkButton* const button, GlobalState* const global_state)

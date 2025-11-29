@@ -12,5 +12,4 @@ typedef struct
     bool show_hidden;
 } GlobalState;
 
-void alert_error(const GlobalState* const global_state, const char* const path);
 void set_global_state(GlobalState* const global_state, const char* const path);

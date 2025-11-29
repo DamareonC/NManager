@@ -1,5 +1,4 @@
 #include "Directory.h"
-#include "glib.h"
 #include "Menu.h"
 
 static void s_show_hidden_activate(GSimpleAction* const action, GVariant* const param, const gpointer state)

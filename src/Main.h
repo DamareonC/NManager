@@ -1,20 +1,17 @@
 #include "Button.h"
 #include "Directory.h"
-#include "GlobalState.h"
 #include "Menu.h"
 
-static GlobalState* s_load_global_state(GtkBuilder* const builder)
+static GlobalState* s_init_global_state(GtkBuilder* const builder)
 {
     static GlobalState global_state;
-    const char* const home_path = "/bin";
+    const char* const home_path = g_get_home_dir();
 
     global_state.entry_list = GTK_LIST_BOX(gtk_builder_get_object(builder, "entry_list"));
     global_state.path_entry_buffer = gtk_entry_get_buffer(GTK_ENTRY(gtk_builder_get_object(builder, "path_entry")));
     global_state.show_hidden = false;
 
-    gtk_entry_buffer_set_text(global_state.path_entry_buffer, home_path, strnlen(home_path, PATH_MAX_LENGTH));
-    memset(global_state.current_path, 0, PATH_MAX_LENGTH);
-    strncpy(global_state.current_path, home_path, PATH_MAX_LENGTH);
+    set_global_state(&global_state, home_path);
 
     return &global_state;
 }
@@ -42,7 +39,7 @@ static void run(GtkApplication* const app, const gconstpointer user_data)
     GtkWindow* const main_window = GTK_WINDOW(gtk_builder_get_object(builder, "main_window"));
     gtk_window_set_application(main_window, app);
 
-    GlobalState* const global_state = s_load_global_state(builder);
+    GlobalState* const global_state = s_init_global_state(builder);
     load_directory(global_state, global_state->current_path);
     
     s_load_css();

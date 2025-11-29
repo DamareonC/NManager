@@ -1,25 +1,39 @@
 #include "Directory.h"
 #include "Entry.h"
-#include "GlobalState.h"
+#include "Error.h"
+#include "File.h"
+#include "Util.h"
 
 static void s_load_child(GlobalState* const global_state, const char* const entry_name)
 {
-    const bool is_root = !strncmp(global_state->current_path, "/", PATH_MAX_LENGTH);
     char buffer_path[PATH_MAX_LENGTH];
 
-    memset(buffer_path, 0, PATH_MAX_LENGTH);
-    snprintf(buffer_path, PATH_MAX_LENGTH, is_root ? "%s%s" : "%s/%s", global_state->current_path, entry_name);
+    set_buffer_path(buffer_path, global_state->current_path, entry_name);
     load_directory_and_set_state(global_state, buffer_path);
 }
 
-static int s_open_file(const char* const file)
+static void s_load_child_directory_row(GtkListBoxRow* const list_box_row, GlobalState* const global_state)
 {
-    char command[PATH_MAX_LENGTH];
+    const char* const entry_name = gtk_button_get_label(GTK_BUTTON(gtk_list_box_row_get_child(list_box_row)));
+    s_load_child(global_state, entry_name);
+}
 
-    memset(command, 0, PATH_MAX_LENGTH);
-    snprintf(command, PATH_MAX_LENGTH, "xdg-open '%s'", file);
+static void s_load_child_directory_button(GtkButton* const button, GlobalState* const global_state)
+{
+    const char* const entry_name = gtk_button_get_label(button);
+    s_load_child(global_state, entry_name);
+}
 
-    return system(command);
+static void s_run_child_file_row(GtkListBoxRow* const list_box_row, GlobalState* const global_state)
+{
+    const char* const entry_name = gtk_button_get_label(GTK_BUTTON(gtk_list_box_row_get_child(list_box_row)));
+    run_child_file(global_state, entry_name);
+}
+
+static void s_run_child_file_button(GtkButton* const button, GlobalState* const global_state)
+{
+    const char* const entry_name = gtk_button_get_label(button);
+    run_child_file(global_state, entry_name);
 }
 
 void load_directory_and_set_state(GlobalState* const global_state, const char* const path)
@@ -46,18 +60,28 @@ bool load_directory(GlobalState* const global_state, const char* const path)
 
             for (gint i = 0; i < entries->len; i++)
             {
-                if (!global_state->show_hidden && g_array_index(entries, Entry, i).is_hidden) continue;
+                Entry entry = g_array_index(entries, Entry, i);
+
+                if (!global_state->show_hidden && entry.is_hidden) continue;
 
                 GtkListBoxRow* const list_box_row = GTK_LIST_BOX_ROW(gtk_list_box_row_new());
-                gtk_list_box_append(global_state->entry_list, GTK_WIDGET(list_box_row));
-                g_signal_connect(list_box_row, "activate", G_CALLBACK(load_child_activate), global_state);
-
-                GtkButton* const button = GTK_BUTTON(gtk_button_new_with_label(g_array_index(entries, Entry, i).name));
-                gtk_list_box_row_set_child(GTK_LIST_BOX_ROW(list_box_row), GTK_WIDGET(button));
-                g_signal_connect(button, "clicked", G_CALLBACK(load_child_clicked), global_state);
-
+                GtkButton* const button = GTK_BUTTON(gtk_button_new_with_label(entry.name));
                 GtkLabel* const label = GTK_LABEL(gtk_button_get_child(button));
+
+                gtk_list_box_row_set_child(GTK_LIST_BOX_ROW(list_box_row), GTK_WIDGET(button));
+                gtk_list_box_append(global_state->entry_list, GTK_WIDGET(list_box_row));
                 gtk_label_set_xalign(label, 0.0F);
+
+                if (entry.is_directory)
+                {
+                    g_signal_connect(list_box_row, "activate", G_CALLBACK(s_load_child_directory_row), global_state);
+                    g_signal_connect(button, "clicked", G_CALLBACK(s_load_child_directory_button), global_state);
+                }
+                else
+                {
+                    g_signal_connect(list_box_row, "activate", G_CALLBACK(s_run_child_file_row), global_state);
+                    g_signal_connect(button, "clicked", G_CALLBACK(s_run_child_file_button), global_state);
+                }
             }
 
             g_array_free(entries, TRUE);
@@ -77,16 +101,12 @@ bool load_directory(GlobalState* const global_state, const char* const path)
     }
     else
     {
-        if (errno != ENOTDIR || s_open_file(path))
-        {
-            alert_error(global_state, path);
-        }
-
+        run_file(path);
         return false;
     }
 }
 
-void load_parent(GlobalState* const global_state)
+void load_parent_directory(GlobalState* const global_state)
 {
     if (!strncmp(global_state->current_path, "/", PATH_MAX_LENGTH)) return;
 
@@ -115,20 +135,4 @@ void load_parent(GlobalState* const global_state)
     }
 
     load_directory_and_set_state(global_state, buffer_path);
-}
-
-void load_child_activate(GtkListBoxRow* const list_box_row, GlobalState* const data)
-{
-    GtkListBox* const list_box = GTK_LIST_BOX(gtk_widget_get_parent(GTK_WIDGET(list_box_row)));
-    const char* const entry_name = gtk_button_get_label(GTK_BUTTON(gtk_list_box_row_get_child(list_box_row)));
-
-    s_load_child(data, entry_name);
-}
-
-void load_child_clicked(GtkButton* const button, GlobalState* const data)
-{
-    GtkListBox* const list_box = GTK_LIST_BOX(gtk_widget_get_ancestor(GTK_WIDGET(button), GTK_TYPE_LIST_BOX));
-    const char* const entry_name = gtk_button_get_label(button);
-
-    s_load_child(data, entry_name);
 }
