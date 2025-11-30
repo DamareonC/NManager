@@ -58,6 +58,22 @@
                                             <menu>
                                                 <section>
                                                     <item>
+                                                        <attribute name='label' translatable='yes'>Add File</attribute>
+                                                        <attribute name='action'>app.add-file</attribute>
+                                                    </item>
+                                                    <item>
+                                                        <attribute name='label' translatable='yes'>Add Folder</attribute>
+                                                        <attribute name='action'>app.add-folder</attribute>
+                                                    </item>
+                                                    <item>
+                                                        <attribute name='label' translatable='yes'>Move to Trash</attribute>
+                                                        <attribute name='action'>app.move-to-trash</attribute>
+                                                    </item>
+                                                    <item>
+                                                        <attribute name='label' translatable='yes'>Permanently Delete</attribute>
+                                                        <attribute name='action'>app.permanently-delete</attribute>
+                                                    </item>
+                                                    <item>
                                                         <attribute name='label' translatable='yes'>Show Hidden</attribute>
                                                         <attribute name='action'>app.show-hidden</attribute>
                                                     </item>

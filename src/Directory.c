@@ -91,7 +91,7 @@ bool load_directory(GlobalState* const global_state, const char* const path)
         }
         else
         {
-            alert_error(global_state, path);
+            alert_error(global_state, "Error Opening Directory", "%s could not be opened.", path);
         }
 
         closedir(directory);

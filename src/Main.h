@@ -26,7 +26,6 @@ static void s_load_css(void)
     
     g_object_unref(css_provider);
     g_object_unref(css_file_ptr);
-
     css_provider = NULL;
     css_file_ptr = NULL;
 }
@@ -45,9 +44,8 @@ static void run(GtkApplication* const app, const gconstpointer user_data)
     s_load_css();
     load_buttons(builder, global_state);
     load_menu(app, global_state);
-
     gtk_window_present(main_window);
-    g_object_unref(builder);
 
+    g_object_unref(builder);
     builder = NULL;
 }

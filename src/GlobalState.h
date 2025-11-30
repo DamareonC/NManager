@@ -2,7 +2,7 @@
 
 #include <gtk/gtk.h>
 
-#define PATH_MAX_LENGTH 1024
+#define PATH_MAX_LENGTH 1024UL
 
 typedef struct
 {

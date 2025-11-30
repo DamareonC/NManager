@@ -4,10 +4,8 @@
 int run_file(const char* const file)
 {
     char command[PATH_MAX_LENGTH];
-
-    memset(command, 0, PATH_MAX_LENGTH);
-    snprintf(command, PATH_MAX_LENGTH, "xdg-open '%s'", file);
-
+    
+    set_buffer_format(command, "xdg-open '%s'", file);
     return system(command);
 }
 

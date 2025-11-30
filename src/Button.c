@@ -1,5 +1,6 @@
 #include "Button.h"
 #include "Directory.h"
+#include "Util.h"
 
 static void s_up_button_clicked(const GtkButton* const button, GlobalState* const global_state)
 {
@@ -23,8 +24,7 @@ static void s_path_entry_activate(GtkEntry* const entry, GlobalState* const glob
     long last_index = strnlen(current_text, PATH_MAX_LENGTH) - 1;
     char buffer_path[PATH_MAX_LENGTH];
 
-    memset(buffer_path, 0, PATH_MAX_LENGTH);
-    strncpy(buffer_path, current_text, PATH_MAX_LENGTH);
+    set_buffer(buffer_path, current_text);
 
     while (current_text[last_index] == '/' && last_index > 0)
     {
