@@ -9,7 +9,7 @@ Now:
     * The forward/back buttons should be disabled if there are no next/previous folders
     * The up button should be disabled if the current path is the root folder
     * The home button should be disabled if the current path is the home folder
-* Add buttons for adding, permanently deleting, and trashing files and folders
+* Add buttons for adding, permanently deleting &check;, and trashing files and folders
     * When adding entries, the name should be valid
     * When permanently deleting folders, prompt the user for confirmation
     * Use the trash command in order to trash entries

@@ -36,7 +36,7 @@ void load_entries(const GlobalState* const global_state, DIR* const directory, G
         
         if (stat(full_path, &entry_stats) != 0)
         {
-            alert_error(global_state, full_path);
+            alert_error(global_state, "Error Reading Entry", "%s could not be read.", full_path);
             continue;
         }
 
