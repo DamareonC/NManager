@@ -1,5 +1,4 @@
-#entry_list button
+#entry_list label
 {
-    padding-top: 10px;
-    padding-bottom: 10px;
+    padding: 10px;
 }

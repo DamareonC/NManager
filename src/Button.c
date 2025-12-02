@@ -21,7 +21,7 @@ static void s_path_entry_activate(GtkEntry* const entry, GlobalState* const glob
 {
     GtkEntryBuffer* const entry_buffer = gtk_entry_get_buffer(entry);
     const char* const current_text = gtk_entry_buffer_get_text(entry_buffer);
-    long last_index = strnlen(current_text, PATH_MAX_LENGTH) - 1;
+    size_t last_index = strnlen(current_text, PATH_MAX_LENGTH) - 1UL;
     char buffer_path[PATH_MAX_LENGTH];
 
     set_buffer(buffer_path, current_text);

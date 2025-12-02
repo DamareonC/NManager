@@ -2,16 +2,22 @@
 #include "Directory.h"
 #include "Menu.h"
 
+static void s_entry_list_activate(const GtkListBox* const list_box, GtkListBoxRow* const list_box_row, GlobalState* const global_state)
+{
+    const char* const entry_name = gtk_label_get_text(GTK_LABEL(gtk_list_box_row_get_child(list_box_row)));
+    load_child(global_state, entry_name);
+}
+
 static GlobalState* s_init_global_state(GtkBuilder* const builder)
 {
     static GlobalState global_state;
-    const char* const home_path = g_get_home_dir();
 
     global_state.entry_list = GTK_LIST_BOX(gtk_builder_get_object(builder, "entry_list"));
     global_state.path_entry_buffer = gtk_entry_get_buffer(GTK_ENTRY(gtk_builder_get_object(builder, "path_entry")));
     global_state.show_hidden = false;
 
-    set_global_state(&global_state, home_path);
+    set_global_state(&global_state, g_get_home_dir());
+    g_signal_connect(global_state.entry_list, "row-activated", G_CALLBACK(s_entry_list_activate), &global_state);
 
     return &global_state;
 }

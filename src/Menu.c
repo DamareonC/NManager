@@ -43,7 +43,7 @@ static void s_permanently_delete_activate(GSimpleAction* const action, GVariant*
 
     if (list_box_row)
     {
-        const char* const entry_name = gtk_button_get_label(GTK_BUTTON(gtk_list_box_row_get_child(list_box_row)));
+        const char* const entry_name = gtk_label_get_text(GTK_LABEL(gtk_list_box_row_get_child(list_box_row)));
         GtkAlertDialog* alert_dialog = gtk_alert_dialog_new("Permanent Delete");
         GtkWindow* const window = GTK_WINDOW(gtk_widget_get_ancestor(GTK_WIDGET(global_state->entry_list), GTK_TYPE_WINDOW));
         const char* const buttons[3] = { "Delete", "Cancel", NULL };
