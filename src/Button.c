@@ -14,7 +14,7 @@ static void s_home_button_clicked(const GtkButton* const button, GlobalState* co
 
 static void s_refresh_button_clicked(const GtkButton* const button, GlobalState* const global_state)
 {
-    load_directory(global_state, global_state->current_path);
+    reload_directory(global_state);
 }
 
 static void s_path_entry_activate(GtkEntry* const entry, GlobalState* const global_state)
@@ -41,15 +41,8 @@ static void s_path_entry_activate(GtkEntry* const entry, GlobalState* const glob
 
 void load_buttons(GtkBuilder* const builder, GlobalState* const global_state)
 {
-    GtkButton* const up_button = GTK_BUTTON(gtk_builder_get_object(builder, "up_button"));
-    g_signal_connect(up_button, "clicked", G_CALLBACK(s_up_button_clicked), global_state);
-    
-    GtkButton* const home_button = GTK_BUTTON(gtk_builder_get_object(builder, "home_button"));
-    g_signal_connect(home_button, "clicked", G_CALLBACK(s_home_button_clicked), global_state);
-
-    GtkButton* const refresh_button = GTK_BUTTON(gtk_builder_get_object(builder, "refresh_button"));
-    g_signal_connect(refresh_button, "clicked", G_CALLBACK(s_refresh_button_clicked), global_state);
-
-    GtkEntry* const path_entry = GTK_ENTRY(gtk_builder_get_object(builder, "path_entry"));
-    g_signal_connect(path_entry, "activate", G_CALLBACK(s_path_entry_activate), global_state);
+    g_signal_connect(GTK_BUTTON(gtk_builder_get_object(builder, "up_button")), "clicked", G_CALLBACK(s_up_button_clicked), global_state);
+    g_signal_connect(GTK_BUTTON(gtk_builder_get_object(builder, "home_button")), "clicked", G_CALLBACK(s_home_button_clicked), global_state);
+    g_signal_connect(GTK_BUTTON(gtk_builder_get_object(builder, "refresh_button")), "clicked", G_CALLBACK(s_refresh_button_clicked), global_state);
+    g_signal_connect(GTK_ENTRY(gtk_builder_get_object(builder, "path_entry")), "activate", G_CALLBACK(s_path_entry_activate), global_state);
 }

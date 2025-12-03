@@ -6,6 +6,7 @@
 
 typedef struct
 {
+    GtkWindow* main_window;
     GtkListBox* entry_list;
     GtkEntryBuffer* path_entry_buffer;
     char current_path[PATH_MAX_LENGTH];

@@ -94,7 +94,6 @@
                         <child>
                             <object id="entry_list" class="GtkListBox">
                                 <property name="name">entry_list</property>
-                                <property name="selection-mode">GTK_SELECTION_SINGLE</property>
                                 <property name="activate-on-single-click">FALSE</property>
                             </object>
                         </child>

@@ -1,39 +1,37 @@
 #include "Directory.h"
-#include "Error.h"
+#include "Entry.h"
 #include "Menu.h"
 #include "Util.h"
 
-typedef struct 
+static void s_add_entry_activate(const GlobalState* const global_state, const bool add_folder)
 {
-    GlobalState* global_state;
-    const char* entry_name;
-} EntryData;
+    AddInfo* const add_info = malloc(sizeof(AddInfo));
 
-static void s_permanently_delete(GObject* const warning_alert_dialog, GAsyncResult* const result, const gpointer data)
+    add_info->global_state = global_state;
+    add_info->add_folder = add_folder;
+
+    GtkBuilder* builder = gtk_builder_new();
+    gtk_builder_add_from_file(builder, "res/ui/add_entry.ui", NULL);
+
+    GtkWindow* const popup_window = GTK_WINDOW(gtk_builder_get_object(builder, "add_entry_window"));
+    gtk_window_set_transient_for(popup_window, add_info->global_state->main_window);
+    gtk_window_present(popup_window);
+
+    GtkWidget* const entry = GTK_WIDGET(gtk_builder_get_object(builder, "add_entry_entry"));
+    g_signal_connect(entry, "activate", G_CALLBACK(add_entry), add_info);
+
+    g_object_unref(builder);
+    builder = NULL;
+}
+
+static void s_add_file_activate(GSimpleAction* const action, GVariant* const param, const gpointer state)
 {
-    EntryData* entry_data = data;
-    const int response = gtk_alert_dialog_choose_finish(GTK_ALERT_DIALOG(warning_alert_dialog), result, NULL);
+    s_add_entry_activate(state, false);
+}
 
-    if (!response)
-    {
-        char buffer_path[PATH_MAX_LENGTH];
-        char command[PATH_MAX_LENGTH];
-
-        set_buffer_path(buffer_path, entry_data->global_state->current_path, entry_data->entry_name);
-        snprintf(command, PATH_MAX_LENGTH, "rm -rf %s", buffer_path);
-        
-        if (!system(command))
-        {
-            load_directory(entry_data->global_state, entry_data->global_state->current_path);
-        }
-        else
-        {
-            alert_error(entry_data->global_state, "Error Deleting File", "%s could not be deleted.", buffer_path);
-        }
-    }
-
-    free(entry_data);
-    entry_data = NULL;
+static void s_add_folder_activate(GSimpleAction* const action, GVariant* const param, const gpointer state)
+{
+    s_add_entry_activate(state, true);
 }
 
 static void s_permanently_delete_activate(GSimpleAction* const action, GVariant* const param, const gpointer state)
@@ -45,11 +43,10 @@ static void s_permanently_delete_activate(GSimpleAction* const action, GVariant*
     {
         const char* const entry_name = gtk_label_get_text(GTK_LABEL(gtk_list_box_row_get_child(list_box_row)));
         GtkAlertDialog* alert_dialog = gtk_alert_dialog_new("Permanent Delete");
-        GtkWindow* const window = GTK_WINDOW(gtk_widget_get_ancestor(GTK_WIDGET(global_state->entry_list), GTK_TYPE_WINDOW));
         const char* const buttons[3] = { "Delete", "Cancel", NULL };
         char message[PATH_MAX_LENGTH];
 
-        EntryData* const data = malloc(sizeof(EntryData));
+        DeleteInfo* const data = malloc(sizeof(DeleteInfo));
         
         if (!data)
         {
@@ -66,7 +63,7 @@ static void s_permanently_delete_activate(GSimpleAction* const action, GVariant*
         gtk_alert_dialog_set_buttons(alert_dialog, buttons);
         gtk_alert_dialog_set_default_button(alert_dialog, 0);
         gtk_alert_dialog_set_cancel_button(alert_dialog, 1);
-        gtk_alert_dialog_choose(alert_dialog, window, NULL, s_permanently_delete, data);
+        gtk_alert_dialog_choose(alert_dialog, global_state->main_window, NULL, delete_entry, data);
 
         g_object_unref(alert_dialog);
         alert_dialog = NULL;
@@ -78,13 +75,15 @@ static void s_show_hidden_activate(GSimpleAction* const action, GVariant* const 
     GlobalState* const global_state = state;
     global_state->show_hidden = g_variant_get_boolean(param);
 
-    load_directory(global_state, global_state->current_path);
+    reload_directory(global_state);
     g_simple_action_set_state(action, param);
 }
 
 void load_menu(GtkApplication* const app, GlobalState* const global_state)
 {
     const GActionEntry action_entries[] = {
+        { "add-file", s_add_file_activate, NULL, NULL, NULL },
+        { "add-folder", s_add_folder_activate, NULL, NULL, NULL },
         { "permanently-delete", s_permanently_delete_activate, NULL, NULL, NULL },
         { "show-hidden", NULL, NULL, global_state->show_hidden ? "true" : "false", s_show_hidden_activate }
     };

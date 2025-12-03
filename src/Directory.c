@@ -12,7 +12,7 @@ void load_child(GlobalState* const global_state, const char* const entry_name)
     load_directory_and_set_state(global_state, buffer_path);
 }
 
-bool load_directory(GlobalState* const global_state, const char* const path)
+bool load_directory(const GlobalState* const global_state, const char* const path)
 {
     DIR* directory = opendir(path);
 
@@ -75,13 +75,12 @@ void load_parent_directory(GlobalState* const global_state)
     if (!strncmp(global_state->current_path, "/", PATH_MAX_LENGTH)) return;
 
     const char* const last_slash = strrchr(global_state->current_path, '/');
-    const char* c = global_state->current_path;
-    const bool root_is_parent_dir = strchr(global_state->current_path, '/') == last_slash;
+    const char* char_pos = global_state->current_path;
     char buffer_path[PATH_MAX_LENGTH];
 
     memset(buffer_path, 0, PATH_MAX_LENGTH);
 
-    if (root_is_parent_dir)
+    if (strchr(global_state->current_path, '/') == last_slash)
     {
         buffer_path[0UL] = '/';
     }
@@ -89,14 +88,19 @@ void load_parent_directory(GlobalState* const global_state)
     {
         for (size_t i = 0UL; i < PATH_MAX_LENGTH; i++)
         {
-            if (c != last_slash)
+            if (char_pos != last_slash)
             {
                 buffer_path[i] = global_state->current_path[i];
-                c++;
+                char_pos++;
             }
             else break;
         }
     }
 
     load_directory_and_set_state(global_state, buffer_path);
+}
+
+void reload_directory(const GlobalState* const global_state)
+{
+    load_directory(global_state, global_state->current_path);
 }
