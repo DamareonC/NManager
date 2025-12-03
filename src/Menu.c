@@ -8,7 +8,7 @@ static void s_add_entry_activate(const GlobalState* const global_state, const bo
     AddInfo* const add_info = malloc(sizeof(AddInfo));
 
     add_info->global_state = global_state;
-    add_info->add_folder = add_folder;
+    add_info->is_folder = add_folder;
 
     GtkBuilder* builder = gtk_builder_new();
     gtk_builder_add_from_file(builder, "res/ui/add_entry.ui", NULL);
@@ -34,6 +34,30 @@ static void s_add_folder_activate(GSimpleAction* const action, GVariant* const p
     s_add_entry_activate(state, true);
 }
 
+static void s_move_to_trash_activate(GSimpleAction* const action, GVariant* const param, const gpointer state)
+{
+    const GlobalState* const global_state = state;
+    GtkListBoxRow* const list_box_row = gtk_list_box_get_selected_row(global_state->entry_list);
+
+    if (list_box_row)
+    {
+        const char* const entry_name = gtk_label_get_text(GTK_LABEL(gtk_list_box_row_get_child(list_box_row)));
+        DeleteInfo* const delete_info = malloc(sizeof(DeleteInfo));
+        
+        if (!delete_info)
+        {
+            exit(EXIT_FAILURE);
+        }
+        else
+        {
+            delete_info->global_state = global_state;
+            delete_info->entry_name = entry_name;
+
+            trash_entry(global_state, delete_info);
+        }
+    }
+}
+
 static void s_permanently_delete_activate(GSimpleAction* const action, GVariant* const param, const gpointer state)
 {
     GlobalState* const global_state = state;
@@ -41,32 +65,35 @@ static void s_permanently_delete_activate(GSimpleAction* const action, GVariant*
 
     if (list_box_row)
     {
-        const char* const entry_name = gtk_label_get_text(GTK_LABEL(gtk_list_box_row_get_child(list_box_row)));
         GtkAlertDialog* alert_dialog = gtk_alert_dialog_new("Permanent Delete");
+        const char* const entry_name = gtk_label_get_text(GTK_LABEL(gtk_list_box_row_get_child(list_box_row)));
         const char* const buttons[3] = { "Delete", "Cancel", NULL };
         char message[PATH_MAX_LENGTH];
 
-        DeleteInfo* const data = malloc(sizeof(DeleteInfo));
+        DeleteInfo* const delete_info = malloc(sizeof(DeleteInfo));
         
-        if (!data)
+        if (!delete_info)
         {
+            g_object_unref(alert_dialog);
+            alert_dialog = NULL;
+
             exit(EXIT_FAILURE);
         }
         else
         {
-            data->global_state = global_state;
-            data->entry_name = entry_name;
+            delete_info->global_state = global_state;
+            delete_info->entry_name = entry_name;
+
+            set_buffer_format(message, "Are you sure you want to permanently delete %s? This action cannot be undone.", entry_name);
+            gtk_alert_dialog_set_detail(alert_dialog, message);
+            gtk_alert_dialog_set_buttons(alert_dialog, buttons);
+            gtk_alert_dialog_set_default_button(alert_dialog, 0);
+            gtk_alert_dialog_set_cancel_button(alert_dialog, 1);
+            gtk_alert_dialog_choose(alert_dialog, global_state->main_window, NULL, delete_entry, delete_info);
+
+            g_object_unref(alert_dialog);
+            alert_dialog = NULL;
         }
-
-        set_buffer_format(message, "Are you sure you want to permanently delete %s? This action cannot be undone.", entry_name);
-        gtk_alert_dialog_set_detail(alert_dialog, message);
-        gtk_alert_dialog_set_buttons(alert_dialog, buttons);
-        gtk_alert_dialog_set_default_button(alert_dialog, 0);
-        gtk_alert_dialog_set_cancel_button(alert_dialog, 1);
-        gtk_alert_dialog_choose(alert_dialog, global_state->main_window, NULL, delete_entry, data);
-
-        g_object_unref(alert_dialog);
-        alert_dialog = NULL;
     }
 }
 
@@ -84,6 +111,7 @@ void load_menu(GtkApplication* const app, GlobalState* const global_state)
     const GActionEntry action_entries[] = {
         { "add-file", s_add_file_activate, NULL, NULL, NULL },
         { "add-folder", s_add_folder_activate, NULL, NULL, NULL },
+        { "move-to-trash", s_move_to_trash_activate, NULL, NULL, NULL },
         { "permanently-delete", s_permanently_delete_activate, NULL, NULL, NULL },
         { "show-hidden", NULL, NULL, global_state->show_hidden ? "true" : "false", s_show_hidden_activate }
     };

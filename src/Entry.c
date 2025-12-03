@@ -30,11 +30,11 @@ void add_entry(GtkEntry* const entry, AddInfo* add_info)
 
     if (has_entry(add_info->global_state, entry_name))
     {
-        alert_error(add_info->global_state, "File/Folder Already Exists", "%s already exists. Please choose another name.", buffer_path);
+        alert_error(add_info->global_state, "File/Folder Already Exists", "%s already exists. Please choose another name.", entry_name);
     }
     else
     {
-        if (add_info->add_folder)
+        if (add_info->is_folder)
         {
             if (mkdir(buffer_path, S_IRWXU | S_IRGRP | S_IXGRP | S_IROTH | S_IXOTH))
             {
@@ -66,28 +66,28 @@ void add_entry(GtkEntry* const entry, AddInfo* add_info)
 
 void delete_entry(GObject* const warning_alert_dialog, GAsyncResult* const result, const gpointer data)
 {
-    DeleteInfo* entry_data = data;
+    DeleteInfo* delete_info = data;
 
     if (!gtk_alert_dialog_choose_finish(GTK_ALERT_DIALOG(warning_alert_dialog), result, NULL))
     {
         char buffer_path[PATH_MAX_LENGTH];
         char command[PATH_MAX_LENGTH];
 
-        set_buffer_path(buffer_path, entry_data->global_state->current_path, entry_data->entry_name);
-        snprintf(command, PATH_MAX_LENGTH, "rm -rf %s", buffer_path);
+        set_buffer_path(buffer_path, delete_info->global_state->current_path, delete_info->entry_name);
+        snprintf(command, PATH_MAX_LENGTH, "rm -rf '%s'", buffer_path);
         
         if (!system(command))
         {
-            reload_directory(entry_data->global_state);
+            reload_directory(delete_info->global_state);
         }
         else
         {
-            alert_error(entry_data->global_state, "Error Deleting File/Folder", "%s could not be deleted.", buffer_path);
+            alert_error(delete_info->global_state, "Error Deleting File/Folder", "%s could not be deleted.", delete_info->entry_name);
         }
     }
 
-    free(entry_data);
-    entry_data = NULL;
+    free(delete_info);
+    delete_info = NULL;
 }
 
 bool has_entry(const GlobalState* const global_state, const char* const entry_name)
@@ -125,7 +125,7 @@ void load_entries(const GlobalState* const global_state, DIR* const directory, G
         
         if (stat(full_path, &entry_stats) != 0)
         {
-            alert_error(global_state, "Error Reading Entry", "%s could not be read.", full_path);
+            alert_error(global_state, "Error Reading Entry", "%s could not be read.", directory_entry->d_name);
             continue;
         }
 
@@ -141,4 +141,25 @@ void load_entries(const GlobalState* const global_state, DIR* const directory, G
 
     g_array_sort(entries, s_sort_entries_by_name);
     g_array_sort(entries, s_sort_entries_by_type);
+}
+
+void trash_entry(const GlobalState* const global_state, DeleteInfo* delete_info)
+{
+    char buffer_path[PATH_MAX_LENGTH];
+    char command[PATH_MAX_LENGTH];
+
+    set_buffer_path(buffer_path, global_state->current_path, delete_info->entry_name);
+    snprintf(command, PATH_MAX_LENGTH, "trash-put '%s'", buffer_path);
+    
+    if (!system(command))
+    {
+        reload_directory(delete_info->global_state);
+    }
+    else
+    {
+        alert_error(delete_info->global_state, "Error Trashing File/Folder", "%s could not be sent to trash.", delete_info->entry_name);
+    }
+
+    free(delete_info);
+    delete_info = NULL;
 }

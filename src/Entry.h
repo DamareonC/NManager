@@ -14,7 +14,7 @@ typedef struct
 typedef struct
 {
     const GlobalState* global_state;
-    bool add_folder;
+    bool is_folder;
 } AddInfo;
 
 typedef struct 
@@ -27,3 +27,4 @@ void add_entry(GtkEntry* const entry, AddInfo* add_info);
 void delete_entry(GObject* const warning_alert_dialog, GAsyncResult* const result, const gpointer data);
 bool has_entry(const GlobalState* const global_state, const char* const entry_name);
 void load_entries(const GlobalState* const global_state, DIR* const directory, GArray* const entries, const char* const path);
+void trash_entry(const GlobalState* const global_state, DeleteInfo* delete_info);
