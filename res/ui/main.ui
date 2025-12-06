@@ -11,11 +11,13 @@
 
                 <child>
                     <object id="button_box" class="GtkBox">
+                        <property name="name">button_box</property>
+                        
                         <child>
                             <object id="up_button" class="GtkButton">
                                 <child>
                                     <object id="up_button_label" class="GtkLabel">
-                                        <property name="label">Up</property>
+                                        <property name="label">&#8593;</property>
                                     </object>
                                 </child>
                             </object>
@@ -35,7 +37,7 @@
                             <object id="refresh_button" class="GtkButton">
                                 <child>
                                     <object id="refresh_button_label" class="GtkLabel">
-                                        <property name="label">Refresh</property>
+                                        <property name="label">&#10227;</property>
                                     </object>
                                 </child>
                             </object>
@@ -93,7 +95,6 @@
 
                         <child>
                             <object id="entry_list" class="GtkListBox">
-                                <property name="name">entry_list</property>
                                 <property name="activate-on-single-click">FALSE</property>
                             </object>
                         </child>

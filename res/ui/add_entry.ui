@@ -3,6 +3,7 @@
     <object id="add_entry_window" class="GtkWindow">
         <property name="title">Add File/Folder</property>
         <property name="modal">TRUE</property>
+        <property name="default-width">240</property>
 
         <child>
             <object id="add_entry_entry" class="GtkEntry">

@@ -1,4 +1,84 @@
-#entry_list label
+*
 {
+    color: #550099;
+}
+
+window
+{
+    background-color: #151515;
+}
+
+#button_box
+{
+    background-color: #151515;
+    padding: 5px;
+}
+
+button
+{
+    background-image: none;
+}
+
+button, entry
+{
+    border-radius: 15px;
+    border-width: 0px;
+    margin: 0px 2px;
+}
+
+button:hover
+{
+    background-color: #1c1c1c;
+}
+
+button:active
+{
+    background-color: #232323;
+}
+
+entry
+{
+    background-color: #1c1c1c;
+    outline-color: #550099;
+}
+
+popover arrow, popover contents
+{
+    background-color: #151515;
+    border-color: #550099;
+}
+
+list
+{
+    background-color: #191919;
+}
+
+row
+{
+    background-color: #191919;
+    border-radius: 15px;
+    margin: 5px 10px;
+}
+
+row:selected
+{
+    background-color: #550099;
+    outline-color: #550099;
+}
+
+row label
+{
+    background-color: #191919;
+    border-radius: 15px;
     padding: 10px;
+}
+
+row label:hover
+{
+    background-color: #202020;
+}
+
+row label:active
+{
+    background-color: #232323;
 }
