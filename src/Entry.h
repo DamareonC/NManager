@@ -2,7 +2,7 @@
 
 #include "GlobalState.h"
 
-#define NAME_MAX_LENGTH 256
+#define NAME_MAX_LENGTH 256UL
 
 typedef struct
 {
@@ -26,5 +26,5 @@ typedef struct
 void add_entry(GtkEntry* const entry, AddInfo* const add_info);
 void delete_entry(GObject* const object, GAsyncResult* const result, const gpointer data);
 bool has_entry(const GlobalState* const global_state, const char* const entry_name);
-void load_entries(const GlobalState* const global_state, DIR* const directory, GArray* const entries, const char* const path);
+void load_entries(const GlobalState* const global_state, GFileEnumerator* const file_enumerator, GArray* const entries, const char* const path);
 void trash_entry(const GlobalState* const global_state, DeleteInfo* const delete_info);

@@ -48,7 +48,6 @@ static void s_move_to_trash_activate(GSimpleAction* const action, GVariant* cons
 
     if (list_box_row)
     {
-        const char* const entry_name = gtk_label_get_text(GTK_LABEL(gtk_list_box_row_get_child(list_box_row)));
         DeleteInfo* const delete_info = malloc(sizeof(DeleteInfo));
         
         if (!delete_info)
@@ -58,7 +57,7 @@ static void s_move_to_trash_activate(GSimpleAction* const action, GVariant* cons
         else
         {
             delete_info->global_state = global_state;
-            delete_info->entry_name = entry_name;
+            delete_info->entry_name = gtk_label_get_text(GTK_LABEL(gtk_list_box_row_get_child(list_box_row)));
 
             trash_entry(global_state, delete_info);
         }

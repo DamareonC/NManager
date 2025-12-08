@@ -14,9 +14,11 @@ void load_child(GlobalState* const global_state, const char* const entry_name)
 
 bool load_directory(GlobalState* const global_state, const char* const path)
 {
-    DIR* const directory = opendir(path);
+    GFile* file = g_file_new_for_path(path);
+    GError* error = NULL;
+    GFileEnumerator* file_enumerator = g_file_enumerate_children(file, "standard::*", G_FILE_QUERY_INFO_NONE, NULL, &error);
 
-    if (directory)
+    if (file_enumerator)
     {
         gtk_list_box_remove_all(global_state->entry_list);
 
@@ -24,9 +26,9 @@ bool load_directory(GlobalState* const global_state, const char* const path)
 
         if (entries)
         {
-            load_entries(global_state, directory, entries, path);
+            load_entries(global_state, file_enumerator, entries, path);
 
-            for (gint i = 0; i < entries->len; i++)
+            for (guint i = 0U; i < entries->len; i++)
             {
                 const Entry* const entry = &g_array_index(entries, Entry, i);
 
@@ -41,7 +43,6 @@ bool load_directory(GlobalState* const global_state, const char* const path)
             }
 
             g_array_free(entries, TRUE);
-
             return true;
         }
         else
@@ -49,15 +50,27 @@ bool load_directory(GlobalState* const global_state, const char* const path)
             alert_error(global_state, "Error Loading Directory", "%s could not be loading.", path);
         }
 
-        closedir(directory);
-
-        return false;
+        g_object_unref(file_enumerator);
     }
-    else
+    else if (error != NULL)
     {
-        run_file(global_state, path);
-        return false;
+        switch (error->code)
+        {
+            case G_IO_ERROR_NOT_DIRECTORY:
+                run_file(global_state, path);
+                break;
+            case G_IO_ERROR_NOT_FOUND:
+                alert_error(global_state, "File/Folder Not Found", "%s could not be found.", path);
+                break;
+            default:
+                alert_error(global_state, "Error Opening File/Folder", "%s could not be opened.", path);
+        }
+        
+        g_error_free(error);
     }
+
+    g_object_unref(file);
+    return false;
 }
 
 void load_directory_and_set_state(GlobalState* const global_state, const char* const path)

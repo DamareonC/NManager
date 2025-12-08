@@ -1,7 +1,7 @@
 #define _XOPEN_SOURCE 500
 
 #include <ftw.h>
-#include <sys/stat.h>
+#include <strings.h>
 
 #include "Directory.h"
 #include "Entry.h"
@@ -19,7 +19,7 @@ static int s_recursive_remove(const char* const filepath, const struct stat* con
 
 static gint s_sort_entries_by_name(const gconstpointer left, const gconstpointer right)
 {
-    return strncmp(((Entry*)(left))->name, ((Entry*)(right))->name, NAME_MAX_LENGTH);
+    return strncasecmp(((Entry*)(left))->name, ((Entry*)(right))->name, NAME_MAX_LENGTH);
 }
 
 static gint s_sort_entries_by_type(const gconstpointer left, const gconstpointer right)
@@ -98,48 +98,53 @@ void delete_entry(GObject* const object, GAsyncResult* const result, const gpoin
 
 bool has_entry(const GlobalState* const global_state, const char* const entry_name)
 {
-    DIR* const directory = opendir(global_state->current_path);
+    GDir* const dir = g_dir_open(global_state->current_path, 0U, NULL);
 
-    if (directory)
+    if (dir)
     {
-        const struct dirent* directory_entry;
+        const char* entry;
 
-        while ((directory_entry = readdir(directory)))
+        while ((entry = g_dir_read_name(dir)))
         {
-            if (!strncmp(entry_name, directory_entry->d_name, PATH_MAX_LENGTH)) return true;
+            if (!g_strcmp0(entry_name, entry)) return true;
         }
 
-        closedir(directory);
-        return false;
+        g_dir_close(dir);
     }
-    else return false;
+
+    return false;
 }
 
-void load_entries(const GlobalState* const global_state, DIR* const directory, GArray* const entries, const char* const path)
+void load_entries(const GlobalState* const global_state, GFileEnumerator* const file_enumerator, GArray* const entries, const char* const path)
 {
-    const struct dirent* directory_entry;
-    struct stat entry_stats;
-    char full_path[PATH_MAX_LENGTH];
+    GFileInfo* file_info;
+    GError* error = NULL;
+    gboolean result;
+    const char* filename;
 
-    while ((directory_entry = readdir(directory)))
+    while (true)
     {
-        if (!strncmp(directory_entry->d_name, ".", PATH_MAX_LENGTH) || !strncmp(directory_entry->d_name, "..", PATH_MAX_LENGTH)) continue;
+        result = g_file_enumerator_iterate(file_enumerator, &file_info, NULL, NULL, &error);
 
-        set_buffer_path(full_path, path, directory_entry->d_name);
-        
-        if (stat(full_path, &entry_stats) != 0)
+        if (!file_info) break;
+
+        filename = g_file_info_get_name(file_info);
+
+        if (!result)
         {
-            alert_error(global_state, "Error Reading Entry", "%s could not be read.", directory_entry->d_name);
-            continue;
+            alert_error(global_state, "Error Reading File/Folder", "%s could not be read.", filename);
+            g_error_free(error);
         }
+        else
+        {
+            Entry entry = {
+                .is_directory = g_file_info_get_file_type(file_info) == G_FILE_TYPE_DIRECTORY,
+                .is_hidden = g_file_info_get_is_hidden(file_info)
+            };
 
-        Entry entry = {
-            .is_directory = S_ISDIR(entry_stats.st_mode),
-            .is_hidden = directory_entry->d_name[0] == '.'
-        };
-
-        strncpy(entry.name, directory_entry->d_name, NAME_MAX_LENGTH);
-        g_array_append_val(entries, entry);
+            g_strlcpy(entry.name, filename, NAME_MAX_LENGTH);
+            g_array_append_val(entries, entry);
+        }
     }
 
     g_array_sort(entries, s_sort_entries_by_name);

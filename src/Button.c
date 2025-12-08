@@ -21,7 +21,7 @@ static void s_path_entry_activate(GtkEntry* const entry, GlobalState* const glob
     GtkEntryBuffer* const entry_buffer = gtk_entry_get_buffer(entry);
     const char* const current_text = gtk_entry_buffer_get_text(entry_buffer);
 
-    if (strncmp(current_text, "", PATH_MAX_LENGTH) && load_directory(global_state, current_text))
+    if (g_strcmp0(current_text, "") && load_directory(global_state, current_text))
     {
         set_global_state(global_state, gtk_entry_buffer_get_text(entry_buffer));
     }
