@@ -7,20 +7,20 @@
 void load_child(GlobalState* const global_state, const char* const entry_name)
 {
     char buffer_path[PATH_MAX_LENGTH];
-
     set_buffer_path(buffer_path, global_state->current_path, entry_name);
+
     load_directory_and_set_state(global_state, buffer_path);
 }
 
-bool load_directory(const GlobalState* const global_state, const char* const path)
+bool load_directory(GlobalState* const global_state, const char* const path)
 {
-    DIR* directory = opendir(path);
+    DIR* const directory = opendir(path);
 
     if (directory)
     {
         gtk_list_box_remove_all(global_state->entry_list);
 
-        GArray* entries = g_array_sized_new(FALSE, TRUE, sizeof(Entry), 100U);
+        GArray* const entries = g_array_sized_new(FALSE, TRUE, sizeof(Entry), 1000U);
 
         if (entries)
         {
@@ -41,23 +41,21 @@ bool load_directory(const GlobalState* const global_state, const char* const pat
             }
 
             g_array_free(entries, TRUE);
-            entries = NULL;
 
             return true;
         }
         else
         {
-            alert_error(global_state, "Error Opening Directory", "%s could not be opened.", path);
+            alert_error(global_state, "Error Loading Directory", "%s could not be loading.", path);
         }
 
         closedir(directory);
-        directory = NULL;
 
         return false;
     }
     else
     {
-        run_file(path);
+        run_file(global_state, path);
         return false;
     }
 }
@@ -72,35 +70,19 @@ void load_directory_and_set_state(GlobalState* const global_state, const char* c
 
 void load_parent_directory(GlobalState* const global_state)
 {
-    if (!strncmp(global_state->current_path, "/", PATH_MAX_LENGTH)) return;
-
-    const char* const last_slash = strrchr(global_state->current_path, '/');
-    const char* char_pos = global_state->current_path;
-    char buffer_path[PATH_MAX_LENGTH];
-
-    memset(buffer_path, 0, PATH_MAX_LENGTH);
-
-    if (strchr(global_state->current_path, '/') == last_slash)
+    GFile* const current_directory = g_file_new_for_path(global_state->current_path);
+    GFile* const parent_directory = g_file_get_parent(current_directory);
+    
+    if (parent_directory)
     {
-        buffer_path[0UL] = '/';
+        load_directory_and_set_state(global_state, g_file_get_path(parent_directory));
+        g_object_unref(parent_directory);
     }
-    else
-    {
-        for (size_t i = 0UL; i < PATH_MAX_LENGTH; i++)
-        {
-            if (char_pos != last_slash)
-            {
-                buffer_path[i] = global_state->current_path[i];
-                char_pos++;
-            }
-            else break;
-        }
-    }
-
-    load_directory_and_set_state(global_state, buffer_path);
+    
+    g_object_unref(current_directory);
 }
 
-void reload_directory(const GlobalState* const global_state)
+void reload_directory(GlobalState* const global_state)
 {
     load_directory(global_state, global_state->current_path);
 }

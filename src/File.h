@@ -2,4 +2,4 @@
 
 #include "GlobalState.h"
 
-int run_file(const char* const file);
+void run_file(GlobalState* const global_state, const char* const path);

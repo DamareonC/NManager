@@ -1,12 +1,14 @@
 # NManager
 
+![NManager Screenshot](./screenshot.png "NManager Screenshot")
+
 NManager is a simple file manager, written in C and using GTK4, that allows you to:
 * View all files/folders in a directory
 * Add files/folders
 * Permanently delete files/folders
 * Move file/folders to trash
 
-**NOTE: NManager has only been tested and built on Linux. Make sure the `trash-cli` and `xdg-utils` packages are installed.**
+**NOTE: NManager has only been tested and built on Linux.**
 
 ## Building from Source
 

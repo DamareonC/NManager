@@ -1,27 +1,34 @@
 #include "Directory.h"
 #include "Entry.h"
 #include "Menu.h"
+#include "Error.h"
 #include "Util.h"
 
-static void s_add_entry_activate(const GlobalState* const global_state, const bool add_folder)
+static void s_add_entry_activate(GlobalState* const global_state, const bool add_folder)
 {
     AddInfo* const add_info = malloc(sizeof(AddInfo));
 
-    add_info->global_state = global_state;
-    add_info->is_folder = add_folder;
+    if (!add_info)
+    {
+        alert_error(global_state, "Error Allocating Memory", "Memory could not be allocated.", "");
+    }
+    else
+    {
+        add_info->global_state = global_state;
+        add_info->is_folder = add_folder;
 
-    GtkBuilder* builder = gtk_builder_new();
-    gtk_builder_add_from_file(builder, "res/ui/add_entry.ui", NULL);
+        GtkBuilder* const builder = gtk_builder_new();
+        gtk_builder_add_from_file(builder, "res/ui/add_entry.ui", NULL);
 
-    GtkWindow* const popup_window = GTK_WINDOW(gtk_builder_get_object(builder, "add_entry_window"));
-    gtk_window_set_transient_for(popup_window, add_info->global_state->main_window);
-    gtk_window_present(popup_window);
+        GtkWindow* const popup_window = GTK_WINDOW(gtk_builder_get_object(builder, "add_entry_window"));
+        gtk_window_set_transient_for(popup_window, add_info->global_state->main_window);
+        gtk_window_present(popup_window);
 
-    GtkWidget* const entry = GTK_WIDGET(gtk_builder_get_object(builder, "add_entry_entry"));
-    g_signal_connect(entry, "activate", G_CALLBACK(add_entry), add_info);
+        GtkWidget* const entry = GTK_WIDGET(gtk_builder_get_object(builder, "add_entry_entry"));
+        g_signal_connect(entry, "activate", G_CALLBACK(add_entry), add_info);
 
-    g_object_unref(builder);
-    builder = NULL;
+        g_object_unref(builder);
+    }
 }
 
 static void s_add_file_activate(GSimpleAction* const action, GVariant* const param, const gpointer state)
@@ -36,7 +43,7 @@ static void s_add_folder_activate(GSimpleAction* const action, GVariant* const p
 
 static void s_move_to_trash_activate(GSimpleAction* const action, GVariant* const param, const gpointer state)
 {
-    const GlobalState* const global_state = state;
+    GlobalState* const global_state = state;
     GtkListBoxRow* const list_box_row = gtk_list_box_get_selected_row(global_state->entry_list);
 
     if (list_box_row)
@@ -46,7 +53,7 @@ static void s_move_to_trash_activate(GSimpleAction* const action, GVariant* cons
         
         if (!delete_info)
         {
-            exit(EXIT_FAILURE);
+            alert_error(global_state, "Error Allocating Memory", "Memory could not be allocated.", "");
         }
         else
         {
@@ -65,19 +72,16 @@ static void s_permanently_delete_activate(GSimpleAction* const action, GVariant*
 
     if (list_box_row)
     {
-        GtkAlertDialog* alert_dialog = gtk_alert_dialog_new("Permanent Delete");
+        DeleteInfo* const delete_info = malloc(sizeof(DeleteInfo));
+        GtkAlertDialog* const alert_dialog = gtk_alert_dialog_new("Permanent Delete");
         const char* const entry_name = gtk_label_get_text(GTK_LABEL(gtk_list_box_row_get_child(list_box_row)));
         const char* const buttons[3] = { "Delete", "Cancel", NULL };
         char message[PATH_MAX_LENGTH];
-
-        DeleteInfo* const delete_info = malloc(sizeof(DeleteInfo));
         
         if (!delete_info)
         {
+            alert_error(global_state, "Error Allocating Memory", "Memory could not be allocated.", "");
             g_object_unref(alert_dialog);
-            alert_dialog = NULL;
-
-            exit(EXIT_FAILURE);
         }
         else
         {
@@ -92,7 +96,6 @@ static void s_permanently_delete_activate(GSimpleAction* const action, GVariant*
             gtk_alert_dialog_choose(alert_dialog, global_state->main_window, NULL, delete_entry, delete_info);
 
             g_object_unref(alert_dialog);
-            alert_dialog = NULL;
         }
     }
 }

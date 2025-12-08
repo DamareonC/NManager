@@ -11,12 +11,17 @@ window
 #button_box
 {
     background-color: #151515;
+    border-color: #550099;
+    border-style: solid;
+    border-bottom-width: 1px;
     padding: 5px;
 }
 
 button
 {
     background-image: none;
+    background-color: #151515;
+    box-shadow: none;
 }
 
 button, entry

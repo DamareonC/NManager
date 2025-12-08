@@ -1,9 +1,21 @@
-#include "sys/stat.h"
+#define _XOPEN_SOURCE 500
+
+#include <ftw.h>
+#include <sys/stat.h>
 
 #include "Directory.h"
 #include "Entry.h"
 #include "Error.h"
 #include "Util.h"
+
+static int s_recursive_remove(const char* const filepath, const struct stat* const stat, const int type, struct FTW* const ftw)
+{
+    GFile* const file = g_file_new_for_path(filepath);
+    const gboolean result = !g_file_delete(file, NULL, NULL);
+
+    g_object_unref(file);
+    return result;
+}
 
 static gint s_sort_entries_by_name(const gconstpointer left, const gconstpointer right)
 {
@@ -20,13 +32,12 @@ static gint s_sort_entries_by_type(const gconstpointer left, const gconstpointer
     else return 0;
 }
 
-void add_entry(GtkEntry* const entry, AddInfo* add_info)
+void add_entry(GtkEntry* const entry, AddInfo* const add_info)
 {
-    GtkEntryBuffer* const entry_buffer = gtk_entry_get_buffer(entry);
-    const char* const entry_name = gtk_entry_buffer_get_text(entry_buffer);
+    const char* const entry_name = gtk_entry_buffer_get_text(gtk_entry_get_buffer(entry));
     char buffer_path[PATH_MAX_LENGTH];
-
-    set_buffer_path(buffer_path, add_info->global_state->current_path, gtk_entry_buffer_get_text(entry_buffer));
+    set_buffer_path(buffer_path, add_info->global_state->current_path, entry_name);
+    GFile* const file = g_file_new_for_path(buffer_path);
 
     if (has_entry(add_info->global_state, entry_name))
     {
@@ -36,19 +47,18 @@ void add_entry(GtkEntry* const entry, AddInfo* add_info)
     {
         if (add_info->is_folder)
         {
-            if (mkdir(buffer_path, S_IRWXU | S_IRGRP | S_IXGRP | S_IROTH | S_IXOTH))
+            if(!g_file_make_directory(file, NULL, NULL))
             {
                 alert_error(add_info->global_state, "Error Creating Folder", "%s could not be created.", entry_name);
             }
         }
         else
         {
-            FILE* file = fopen(buffer_path, "a");
+             GFileOutputStream* const file_output_stream = g_file_create(file, G_FILE_CREATE_NONE, NULL, NULL);
 
-            if (file)
+            if (file_output_stream)
             {
-                fclose(file);
-                file = NULL;
+                g_object_unref(file_output_stream);
             }
             else
             {
@@ -60,23 +70,20 @@ void add_entry(GtkEntry* const entry, AddInfo* add_info)
     gtk_window_close(GTK_WINDOW(gtk_widget_get_parent(GTK_WIDGET(entry))));
     reload_directory(add_info->global_state);
 
+    g_object_unref(file);
     free(add_info);
-    add_info = NULL;
 }
 
-void delete_entry(GObject* const warning_alert_dialog, GAsyncResult* const result, const gpointer data)
+void delete_entry(GObject* const object, GAsyncResult* const result, const gpointer data)
 {
-    DeleteInfo* delete_info = data;
+    DeleteInfo* const delete_info = data;
 
-    if (!gtk_alert_dialog_choose_finish(GTK_ALERT_DIALOG(warning_alert_dialog), result, NULL))
+    if (!gtk_alert_dialog_choose_finish(GTK_ALERT_DIALOG(object), result, NULL))
     {
         char buffer_path[PATH_MAX_LENGTH];
-        char command[PATH_MAX_LENGTH];
-
         set_buffer_path(buffer_path, delete_info->global_state->current_path, delete_info->entry_name);
-        snprintf(command, PATH_MAX_LENGTH, "rm -rf '%s'", buffer_path);
         
-        if (!system(command))
+        if (!nftw(buffer_path, s_recursive_remove, 64, FTW_DEPTH | FTW_PHYS))
         {
             reload_directory(delete_info->global_state);
         }
@@ -87,12 +94,11 @@ void delete_entry(GObject* const warning_alert_dialog, GAsyncResult* const resul
     }
 
     free(delete_info);
-    delete_info = NULL;
 }
 
 bool has_entry(const GlobalState* const global_state, const char* const entry_name)
 {
-    DIR* directory = opendir(global_state->current_path);
+    DIR* const directory = opendir(global_state->current_path);
 
     if (directory)
     {
@@ -104,8 +110,6 @@ bool has_entry(const GlobalState* const global_state, const char* const entry_na
         }
 
         closedir(directory);
-        directory = NULL;
-
         return false;
     }
     else return false;
@@ -135,7 +139,6 @@ void load_entries(const GlobalState* const global_state, DIR* const directory, G
         };
 
         strncpy(entry.name, directory_entry->d_name, NAME_MAX_LENGTH);
-
         g_array_append_val(entries, entry);
     }
 
@@ -143,15 +146,13 @@ void load_entries(const GlobalState* const global_state, DIR* const directory, G
     g_array_sort(entries, s_sort_entries_by_type);
 }
 
-void trash_entry(const GlobalState* const global_state, DeleteInfo* delete_info)
+void trash_entry(const GlobalState* const global_state, DeleteInfo* const delete_info)
 {
     char buffer_path[PATH_MAX_LENGTH];
-    char command[PATH_MAX_LENGTH];
-
     set_buffer_path(buffer_path, global_state->current_path, delete_info->entry_name);
-    snprintf(command, PATH_MAX_LENGTH, "trash-put '%s'", buffer_path);
+    GFile* file = g_file_new_for_path(buffer_path);
     
-    if (!system(command))
+    if (g_file_trash(file, NULL, NULL))
     {
         reload_directory(delete_info->global_state);
     }
@@ -160,6 +161,6 @@ void trash_entry(const GlobalState* const global_state, DeleteInfo* delete_info)
         alert_error(delete_info->global_state, "Error Trashing File/Folder", "%s could not be sent to trash.", delete_info->entry_name);
     }
 
+    g_object_unref(file);
     free(delete_info);
-    delete_info = NULL;
 }

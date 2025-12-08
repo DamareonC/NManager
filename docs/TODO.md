@@ -20,3 +20,5 @@
 * Add a searh bar for entries
 * Add icons to differentiate files from folders
 * Add icon for the window
+* Ability to rename, move, copy, cut, and paste files/folder
+* Make files/folders display as soon as they are loaded, instead of after all files/folders are loaded
