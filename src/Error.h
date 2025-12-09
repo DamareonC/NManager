@@ -2,4 +2,5 @@
 
 #include "GlobalState.h"
 
-void alert_error(const GlobalState* const global_state, const char* const title, const char* const message, const char* const path);
+void alert_error(const GlobalState* const global_state, const char* const title, const char* const message);
+void alert_error_format(const GlobalState* const global_state, const char* const title, const char* const message, const char* const path);

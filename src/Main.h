@@ -33,7 +33,7 @@ static void s_load_css(void)
     g_object_unref(css_file_ptr);
 }
 
-static void run(GtkApplication* const app, const gconstpointer user_data)
+static void init_app(GtkApplication* const app, const gconstpointer user_data)
 {
     GtkBuilder* const builder = gtk_builder_new();
     gtk_builder_add_from_file(builder, "res/ui/main.ui", NULL);

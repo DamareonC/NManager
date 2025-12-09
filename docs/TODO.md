@@ -2,6 +2,8 @@
     * Order all entries (first all the folders, then the files; all in alphanumeric order) &check;
     * For now, display hidden entries as well; later, it will be a toggle &check;
     * Add navigation between paths &check;
+    * Display file/folder metadata (creation/modified date, size (bytes/entries), permissions)
+    * Display the number of items in a path
 * Add a search for paths &check;
     * Make sure the path is valid (e.g. no invalid characters, the path exists, etc) &check;
 * Add buttons for forward (next folder), back (previous folder), up (parent folder) &check;, home (home folder) &check;, and refresh (same folder) &check;

@@ -1,6 +1,7 @@
 *
 {
-    color: #550099;
+    color: #8c00ff;
+    outline-color: #8c00ff;
 }
 
 window
@@ -11,10 +12,10 @@ window
 #button_box
 {
     background-color: #151515;
-    border-color: #550099;
+    border-color: #8c00ff;
     border-style: solid;
     border-bottom-width: 1px;
-    padding: 5px;
+    padding: 3px 5px;
 }
 
 button
@@ -28,7 +29,7 @@ button, entry
 {
     border-radius: 15px;
     border-width: 0px;
-    margin: 0px 2px;
+    margin: 5px;
 }
 
 button:hover
@@ -44,13 +45,12 @@ button:active
 entry
 {
     background-color: #1c1c1c;
-    outline-color: #550099;
 }
 
 popover arrow, popover contents
 {
     background-color: #151515;
-    border-color: #550099;
+    border-color: #8c00ff;
 }
 
 list
@@ -67,8 +67,7 @@ row
 
 row:selected
 {
-    background-color: #550099;
-    outline-color: #550099;
+    background-color: #8c00ff;
 }
 
 row label

@@ -10,7 +10,7 @@ static void s_add_entry_activate(GlobalState* const global_state, const bool add
 
     if (!add_info)
     {
-        alert_error(global_state, "Error Allocating Memory", "Memory could not be allocated.", "");
+        alert_error(global_state, "Error Allocating Memory", "Memory could not be allocated.");
     }
     else
     {
@@ -52,7 +52,7 @@ static void s_move_to_trash_activate(GSimpleAction* const action, GVariant* cons
         
         if (!delete_info)
         {
-            alert_error(global_state, "Error Allocating Memory", "Memory could not be allocated.", "");
+            alert_error(global_state, "Error Allocating Memory", "Memory could not be allocated.");
         }
         else
         {
@@ -73,14 +73,13 @@ static void s_permanently_delete_activate(GSimpleAction* const action, GVariant*
     {
         DeleteInfo* const delete_info = malloc(sizeof(DeleteInfo));
         GtkAlertDialog* const alert_dialog = gtk_alert_dialog_new("Permanent Delete");
-        const char* const entry_name = gtk_label_get_text(GTK_LABEL(gtk_list_box_row_get_child(list_box_row)));
         const char* const buttons[3] = { "Delete", "Cancel", NULL };
+        const char* const entry_name = gtk_label_get_text(GTK_LABEL(gtk_list_box_row_get_child(list_box_row)));
         char message[PATH_MAX_LENGTH];
         
         if (!delete_info)
         {
-            alert_error(global_state, "Error Allocating Memory", "Memory could not be allocated.", "");
-            g_object_unref(alert_dialog);
+            alert_error(global_state, "Error Allocating Memory", "Memory could not be allocated.");
         }
         else
         {
@@ -93,9 +92,9 @@ static void s_permanently_delete_activate(GSimpleAction* const action, GVariant*
             gtk_alert_dialog_set_default_button(alert_dialog, 0);
             gtk_alert_dialog_set_cancel_button(alert_dialog, 1);
             gtk_alert_dialog_choose(alert_dialog, global_state->main_window, NULL, delete_entry, delete_info);
-
-            g_object_unref(alert_dialog);
         }
+
+        g_object_unref(alert_dialog);
     }
 }
 

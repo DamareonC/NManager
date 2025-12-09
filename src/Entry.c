@@ -41,7 +41,7 @@ void add_entry(GtkEntry* const entry, AddInfo* const add_info)
 
     if (has_entry(add_info->global_state, entry_name))
     {
-        alert_error(add_info->global_state, "File/Folder Already Exists", "%s already exists. Please choose another name.", entry_name);
+        alert_error_format(add_info->global_state, "File/Folder Already Exists", "%s already exists. Please choose another name.", entry_name);
     }
     else
     {
@@ -49,7 +49,7 @@ void add_entry(GtkEntry* const entry, AddInfo* const add_info)
         {
             if(!g_file_make_directory(file, NULL, NULL))
             {
-                alert_error(add_info->global_state, "Error Creating Folder", "%s could not be created.", entry_name);
+                alert_error_format(add_info->global_state, "Error Creating Folder", "%s could not be created.", entry_name);
             }
         }
         else
@@ -62,7 +62,7 @@ void add_entry(GtkEntry* const entry, AddInfo* const add_info)
             }
             else
             {
-                alert_error(add_info->global_state, "Error Creating File", "%s could not be created.", entry_name);
+                alert_error_format(add_info->global_state, "Error Creating File", "%s could not be created.", entry_name);
             }
         }
     }
@@ -89,7 +89,7 @@ void delete_entry(GObject* const object, GAsyncResult* const result, const gpoin
         }
         else
         {
-            alert_error(delete_info->global_state, "Error Deleting File/Folder", "%s could not be deleted.", delete_info->entry_name);
+            alert_error_format(delete_info->global_state, "Error Deleting File/Folder", "%s could not be deleted.", delete_info->entry_name);
         }
     }
 
@@ -132,7 +132,7 @@ void load_entries(const GlobalState* const global_state, GFileEnumerator* const 
 
         if (!result)
         {
-            alert_error(global_state, "Error Reading File/Folder", "%s could not be read.", filename);
+            alert_error_format(global_state, "Error Reading File/Folder", "%s could not be read.", filename);
             g_error_free(error);
         }
         else
@@ -163,7 +163,7 @@ void trash_entry(const GlobalState* const global_state, DeleteInfo* const delete
     }
     else
     {
-        alert_error(delete_info->global_state, "Error Trashing File/Folder", "%s could not be sent to trash.", delete_info->entry_name);
+        alert_error_format(delete_info->global_state, "Error Trashing File/Folder", "%s could not be sent to trash.", delete_info->entry_name);
     }
 
     g_object_unref(file);

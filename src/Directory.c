@@ -47,7 +47,7 @@ bool load_directory(GlobalState* const global_state, const char* const path)
         }
         else
         {
-            alert_error(global_state, "Error Loading Directory", "%s could not be loading.", path);
+            alert_error_format(global_state, "Error Loading Directory", "%s could not be loading.", path);
         }
 
         g_object_unref(file_enumerator);
@@ -60,10 +60,10 @@ bool load_directory(GlobalState* const global_state, const char* const path)
                 run_file(global_state, path);
                 break;
             case G_IO_ERROR_NOT_FOUND:
-                alert_error(global_state, "File/Folder Not Found", "%s could not be found.", path);
+                alert_error_format(global_state, "File/Folder Not Found", "%s could not be found.", path);
                 break;
             default:
-                alert_error(global_state, "Error Opening File/Folder", "%s could not be opened.", path);
+                alert_error_format(global_state, "Error Opening File/Folder", "%s could not be opened.", path);
         }
         
         g_error_free(error);
