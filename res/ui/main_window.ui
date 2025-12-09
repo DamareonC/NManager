@@ -44,7 +44,7 @@
                         </child>
 
                         <child>
-                            <object id="path_entry" class="GtkEntry">
+                            <object id="wd_entry" class="GtkEntry">
                                 <property name="hexpand">TRUE</property>
                                 <property name="max-length">1024</property>
                                 <property name="placeholder-text">Enter absolute path here</property>
@@ -76,8 +76,8 @@
                                                         <attribute name='action'>app.permanently-delete</attribute>
                                                     </item>
                                                     <item>
-                                                        <attribute name='label' translatable='yes'>Show Hidden</attribute>
-                                                        <attribute name='action'>app.show-hidden</attribute>
+                                                        <attribute name='label' translatable='yes'>Show Hidden Files</attribute>
+                                                        <attribute name='action'>app.show-hidden-files</attribute>
                                                     </item>
                                                 </section>
                                             </menu>
@@ -94,7 +94,7 @@
                         <property name="vexpand">TRUE</property>
 
                         <child>
-                            <object id="entry_list" class="GtkListBox">
+                            <object id="file_list_box" class="GtkListBox">
                                 <property name="activate-on-single-click">FALSE</property>
                             </object>
                         </child>

@@ -1,15 +1,21 @@
 #include "Directory.h"
-#include "Entry.h"
 #include "Error.h"
 #include "File.h"
 #include "Util.h"
 
-void load_child(GlobalState* const global_state, const char* const entry_name)
+static int s_sort_by_name(GtkListBoxRow* const left, GtkListBoxRow* const right, const gpointer data)
 {
-    char buffer_path[PATH_MAX_LENGTH];
-    set_buffer_path(buffer_path, global_state->current_path, entry_name);
+    return strncasecmp(gtk_label_get_text(GTK_LABEL(gtk_list_box_row_get_child(left))), gtk_label_get_label(GTK_LABEL(gtk_list_box_row_get_child(right))), PATH_MAX_LENGTH);
+}
 
-    load_directory_and_set_state(global_state, buffer_path);
+static int s_sort_by_type(GtkListBoxRow* const left, GtkListBoxRow* const right, const gpointer data)
+{
+    const bool left_is_directory = !g_strcmp0(gtk_widget_get_name(GTK_WIDGET(left)), "directory");
+    const bool right_is_directory = !g_strcmp0(gtk_widget_get_name(GTK_WIDGET(right)), "directory");
+
+    if (left_is_directory && !right_is_directory) return -1;
+    else if (!left_is_directory && right_is_directory) return 1;
+    else return 0;
 }
 
 bool load_directory(GlobalState* const global_state, const char* const path)
@@ -20,37 +26,41 @@ bool load_directory(GlobalState* const global_state, const char* const path)
 
     if (file_enumerator)
     {
-        gtk_list_box_remove_all(global_state->entry_list);
+        gtk_list_box_remove_all(global_state->file_list_box);
 
-        GArray* const entries = g_array_sized_new(FALSE, TRUE, sizeof(Entry), 1000U);
+        GFileInfo* file_info;
+        gboolean result;
+        const char* filename;
 
-        if (entries)
+        while (true)
         {
-            load_entries(global_state, file_enumerator, entries, path);
+            result = g_file_enumerator_iterate(file_enumerator, &file_info, NULL, NULL, NULL);
 
-            for (guint i = 0U; i < entries->len; i++)
+            if (!file_info) break;
+
+            filename = g_file_info_get_name(file_info);
+
+            if (!result)
             {
-                const Entry* const entry = &g_array_index(entries, Entry, i);
-
-                if (!global_state->show_hidden && entry->is_hidden) continue;
-
-                GtkListBoxRow* const list_box_row = GTK_LIST_BOX_ROW(gtk_list_box_row_new());
-                GtkLabel* label = GTK_LABEL(gtk_label_new(entry->name));
-
-                gtk_list_box_append(global_state->entry_list, GTK_WIDGET(list_box_row));
-                gtk_list_box_row_set_child(list_box_row, GTK_WIDGET(label));
-                gtk_label_set_xalign(label, 0.0F);
+                alert_error_format(global_state, "Error Reading File/Folder", "%s could not be read.", filename);
             }
+            else
+            {
+                GtkWidget* const list_box_row = gtk_list_box_row_new();
+                GtkWidget* const label = gtk_label_new(filename);
 
-            g_array_free(entries, TRUE);
-            return true;
+                gtk_widget_set_name(list_box_row, g_file_info_get_file_type(file_info) == G_FILE_TYPE_DIRECTORY ? "directory" : "file");
+                gtk_label_set_xalign(GTK_LABEL(label), 0.0F);
+                gtk_list_box_row_set_child(GTK_LIST_BOX_ROW(list_box_row), label);
+                gtk_list_box_append(global_state->file_list_box, list_box_row);
+            }
         }
-        else
-        {
-            alert_error_format(global_state, "Error Loading Directory", "%s could not be loading.", path);
-        }
+
+        gtk_list_box_set_sort_func(global_state->file_list_box, s_sort_by_name, NULL, NULL);
+        gtk_list_box_set_sort_func(global_state->file_list_box, s_sort_by_type, NULL, NULL);
 
         g_object_unref(file_enumerator);
+        return true;
     }
     else if (error != NULL)
     {
@@ -73,12 +83,25 @@ bool load_directory(GlobalState* const global_state, const char* const path)
     return false;
 }
 
-void load_directory_and_set_state(GlobalState* const global_state, const char* const path)
+void reload_directory(GlobalState* const global_state)
+{
+    load_directory(global_state, global_state->current_path);
+}
+
+void load_directory_and_set_global_state(GlobalState* const global_state, const char* const path)
 {
     if (load_directory(global_state, path))
     {
         set_global_state(global_state, path);
     }
+}
+
+void load_child(GlobalState* const global_state, const char* const entry_name)
+{
+    char buffer_path[PATH_MAX_LENGTH];
+    set_buffer_path(buffer_path, global_state->current_path, entry_name);
+
+    load_directory_and_set_global_state(global_state, buffer_path);
 }
 
 void load_parent_directory(GlobalState* const global_state)
@@ -88,14 +111,9 @@ void load_parent_directory(GlobalState* const global_state)
     
     if (parent_directory)
     {
-        load_directory_and_set_state(global_state, g_file_get_path(parent_directory));
+        load_directory_and_set_global_state(global_state, g_file_get_path(parent_directory));
         g_object_unref(parent_directory);
     }
     
     g_object_unref(current_directory);
-}
-
-void reload_directory(GlobalState* const global_state)
-{
-    load_directory(global_state, global_state->current_path);
 }

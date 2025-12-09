@@ -7,10 +7,9 @@
 typedef struct
 {
     GtkWindow* main_window;
-    GtkListBox* entry_list;
-    GtkEntryBuffer* path_entry_buffer;
+    GtkListBox* file_list_box;
+    GtkEntryBuffer* wd_entry_buffer;
     char current_path[PATH_MAX_LENGTH];
-    bool show_hidden;
 } GlobalState;
 
 void set_global_state(GlobalState* const global_state, const char* const path);

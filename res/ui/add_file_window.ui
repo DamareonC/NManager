@@ -1,12 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <interface>
-    <object id="add_entry_window" class="GtkWindow">
+    <object id="add_file_window" class="GtkWindow">
         <property name="title">Add File/Folder</property>
         <property name="modal">TRUE</property>
         <property name="default-width">240</property>
 
         <child>
-            <object id="add_entry_entry" class="GtkEntry">
+            <object id="add_file_entry" class="GtkEntry">
                 <property name="max-length">1024</property>
                 <property name="placeholder-text">Enter file/folder name here</property>
             </object>

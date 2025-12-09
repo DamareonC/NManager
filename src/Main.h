@@ -1,8 +1,9 @@
 #include "Button.h"
 #include "Directory.h"
+#include "Entry.h"
 #include "Menu.h"
 
-static void s_entry_list_activate(const GtkListBox* const list_box, GtkListBoxRow* const list_box_row, GlobalState* const global_state)
+static void s_file_list_box_activate(const GtkListBox* const list_box, GtkListBoxRow* const list_box_row, GlobalState* const global_state)
 {
     load_child(global_state, gtk_label_get_text(GTK_LABEL(gtk_list_box_row_get_child(list_box_row))));
 }
@@ -11,12 +12,11 @@ static GlobalState* s_init_global_state(GtkBuilder* const builder, GtkWindow* co
 {
     static GlobalState global_state;
     global_state.main_window = main_window;
-    global_state.entry_list = GTK_LIST_BOX(gtk_builder_get_object(builder, "entry_list"));
-    global_state.path_entry_buffer = gtk_entry_get_buffer(GTK_ENTRY(gtk_builder_get_object(builder, "path_entry")));
-    global_state.show_hidden = false;
+    global_state.file_list_box = GTK_LIST_BOX(gtk_builder_get_object(builder, "file_list_box"));
+    global_state.wd_entry_buffer = gtk_entry_get_buffer(GTK_ENTRY(gtk_builder_get_object(builder, "wd_entry")));
     set_global_state(&global_state, g_get_home_dir());
 
-    g_signal_connect(global_state.entry_list, "row-activated", G_CALLBACK(s_entry_list_activate), &global_state);
+    g_signal_connect(global_state.file_list_box, "row-activated", G_CALLBACK(s_file_list_box_activate), &global_state);
 
     return &global_state;
 }
@@ -36,7 +36,7 @@ static void s_load_css(void)
 static void init_app(GtkApplication* const app, const gconstpointer user_data)
 {
     GtkBuilder* const builder = gtk_builder_new();
-    gtk_builder_add_from_file(builder, "res/ui/main.ui", NULL);
+    gtk_builder_add_from_file(builder, "res/ui/main_window.ui", NULL);
 
     GtkWindow* const main_window = GTK_WINDOW(gtk_builder_get_object(builder, "main_window"));
     gtk_window_set_application(main_window, app);
@@ -46,8 +46,9 @@ static void init_app(GtkApplication* const app, const gconstpointer user_data)
     
     s_load_css();
     load_buttons(builder, global_state);
+    load_wd_entry(builder, global_state);
     load_menu(app, global_state);
+    
     gtk_window_present(main_window);
-
     g_object_unref(builder);
 }
