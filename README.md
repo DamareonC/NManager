@@ -8,7 +8,7 @@ NManager is a simple file manager, written in C and using GTK4, that allows you 
 * Permanently delete files/folders
 * Move file/folders to trash
 
-**NOTE: NManager has only been tested and built on Linux.**
+**NOTE: NManager has only been tested and built on Linux and Windows (using MSYS2).**
 
 ## Building from Source
 
@@ -19,6 +19,13 @@ NManager is a simple file manager, written in C and using GTK4, that allows you 
 * [GTK4](https://www.gtk.org/docs/installations/) (for Linux, install the development package)
 * C compiler (e.g. GCC or Clang)
 * A build system (e.g. Make or Ninja)
+
+#### Windows
+
+* Download and install [MSYS2](https://www.msys2.org/)
+* In the MSYS2 UCRT64 terminal, run: `pacman -S git mingw-w64-ucrt-x86_64-cmake mingw-w64-ucrt-x86_64-gtk4 mingw-w64-ucrt-x86_64-toolchain base-devel` to install all the dependencies needed for NManager
+
+**NOTE: The home folder in NManager will be `C:\msys64\home\<user>` instead of `C:\Users\<user>`**
 
 ### Building
 

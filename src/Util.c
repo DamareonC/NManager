@@ -12,8 +12,13 @@ void set_buffer_format(char* const buffer, const char* const format, const char*
     g_snprintf(buffer, PATH_MAX_LENGTH, format, arg);
 }
 
-void set_buffer_path(char* const buffer, const char* const path, const char* const entry)
+void set_buffer_path(char* const buffer, const char* const path, const char* const filename)
 {
     memset(buffer, 0, PATH_MAX_LENGTH);
-    g_snprintf(buffer, PATH_MAX_LENGTH, !g_strcmp0(path, "/") ? "%s%s" : "%s/%s", path, entry);
+
+    #ifdef IS_WINDOWS
+        g_snprintf(buffer, PATH_MAX_LENGTH, !g_strcmp0(path, "C:\\") ? "%s%s" : "%s\\%s", path, filename);
+    #else
+        g_snprintf(buffer, PATH_MAX_LENGTH, !g_strcmp0(path, "/") ? "%s%s" : "%s/%s", path, filename);
+    #endif
 }

@@ -23,4 +23,8 @@ add_executable(${PROJECT_NAME}
     ${CMAKE_SOURCE_DIR}/src/Util.c
 )
 
+if(${CMAKE_SYSTEM_NAME} MATCHES "Windows")
+    target_compile_definitions(${PROJECT_NAME} PRIVATE IS_WINDOWS)
+endif()
+
 target_link_libraries(${PROJECT_NAME} ${GTK4_LIBRARIES})

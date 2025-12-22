@@ -5,13 +5,13 @@
 
 static int s_sort_by_name(GtkListBoxRow* const left, GtkListBoxRow* const right, const gpointer data)
 {
-    return strncasecmp(gtk_label_get_text(GTK_LABEL(gtk_list_box_row_get_child(left))), gtk_label_get_label(GTK_LABEL(gtk_list_box_row_get_child(right))), PATH_MAX_LENGTH);
+    return strncasecmp(gtk_label_get_text(GTK_LABEL(gtk_list_box_row_get_child(left))), gtk_label_get_text(GTK_LABEL(gtk_list_box_row_get_child(right))), PATH_MAX_LENGTH);
 }
 
 static int s_sort_by_type(GtkListBoxRow* const left, GtkListBoxRow* const right, const gpointer data)
 {
-    const bool left_is_directory = !g_strcmp0(gtk_widget_get_name(GTK_WIDGET(left)), "directory");
-    const bool right_is_directory = !g_strcmp0(gtk_widget_get_name(GTK_WIDGET(right)), "directory");
+    const bool left_is_directory = gtk_widget_get_name(GTK_WIDGET(left))[0U] == 'd';
+    const bool right_is_directory = gtk_widget_get_name(GTK_WIDGET(right))[0U] == 'd';
 
     if (left_is_directory && !right_is_directory) return -1;
     else if (!left_is_directory && right_is_directory) return 1;
@@ -31,6 +31,7 @@ bool load_directory(GlobalState* const global_state, const char* const path)
         GFileInfo* file_info;
         gboolean result;
         const char* filename;
+        bool is_hidden;
 
         while (true)
         {
@@ -39,6 +40,7 @@ bool load_directory(GlobalState* const global_state, const char* const path)
             if (!file_info) break;
 
             filename = g_file_info_get_name(file_info);
+            is_hidden = g_file_info_get_is_hidden(file_info);
 
             if (!result)
             {
@@ -49,7 +51,15 @@ bool load_directory(GlobalState* const global_state, const char* const path)
                 GtkWidget* const list_box_row = gtk_list_box_row_new();
                 GtkWidget* const label = gtk_label_new(filename);
 
-                gtk_widget_set_name(list_box_row, g_file_info_get_file_type(file_info) == G_FILE_TYPE_DIRECTORY ? "directory" : "file");
+                if (is_hidden)
+                {
+                    gtk_widget_set_name(list_box_row, g_file_info_get_file_type(file_info) == G_FILE_TYPE_DIRECTORY ? "dh" : "fh");
+                }
+                else
+                {
+                    gtk_widget_set_name(list_box_row, g_file_info_get_file_type(file_info) == G_FILE_TYPE_DIRECTORY ? "dv" : "fv");
+                }
+
                 gtk_label_set_xalign(GTK_LABEL(label), 0.0F);
                 gtk_list_box_row_set_child(GTK_LIST_BOX_ROW(list_box_row), label);
                 gtk_list_box_append(global_state->file_list_box, list_box_row);
@@ -96,10 +106,10 @@ void load_directory_and_set_global_state(GlobalState* const global_state, const 
     }
 }
 
-void load_child(GlobalState* const global_state, const char* const entry_name)
+void load_child(GlobalState* const global_state, const char* const filename)
 {
     char buffer_path[PATH_MAX_LENGTH];
-    set_buffer_path(buffer_path, global_state->current_path, entry_name);
+    set_buffer_path(buffer_path, global_state->current_path, filename);
 
     load_directory_and_set_global_state(global_state, buffer_path);
 }

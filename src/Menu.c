@@ -42,7 +42,7 @@ static void s_move_to_trash_activate(GSimpleAction* const action, GVariant* cons
         static DeleteFileInfo delete_file_info;
         
         delete_file_info.global_state = global_state;
-        delete_file_info.entry_name = gtk_label_get_text(GTK_LABEL(gtk_list_box_row_get_child(list_box_row)));
+        delete_file_info.filename = gtk_label_get_text(GTK_LABEL(gtk_list_box_row_get_child(list_box_row)));
 
         trash_file(global_state, &delete_file_info);
     }
@@ -58,27 +58,25 @@ static void s_permanently_delete_activate(GSimpleAction* const action, GVariant*
         static DeleteFileInfo delete_file_info;
         GtkAlertDialog* const alert_dialog = gtk_alert_dialog_new("Permanent Delete");
         const char* const buttons[3] = { "Delete", "Cancel", NULL };
-        const char* const entry_name = gtk_label_get_text(GTK_LABEL(gtk_list_box_row_get_child(list_box_row)));
         char message[PATH_MAX_LENGTH];
         
         delete_file_info.global_state = global_state;
-        delete_file_info.entry_name = entry_name;
+        delete_file_info.filename = gtk_label_get_text(GTK_LABEL(gtk_list_box_row_get_child(list_box_row)));
 
-        set_buffer_format(message, "Are you sure you want to permanently delete %s? This action cannot be undone.", entry_name);
+        set_buffer_format(message, "Are you sure you want to permanently delete %s? This action cannot be undone.", delete_file_info.filename);
         gtk_alert_dialog_set_detail(alert_dialog, message);
         gtk_alert_dialog_set_buttons(alert_dialog, buttons);
         gtk_alert_dialog_set_default_button(alert_dialog, 0);
         gtk_alert_dialog_set_cancel_button(alert_dialog, 1);
         gtk_alert_dialog_choose(alert_dialog, global_state->main_window, NULL, delete_file, &delete_file_info);
-        
 
         g_object_unref(alert_dialog);
     }
 }
 
-static gboolean s_filter_by_hidden(GtkListBoxRow* row, gpointer data)
+static gboolean s_filter_by_hidden(GtkListBoxRow* const row, const gpointer data)
 {
-    return g_variant_get_boolean(data) || gtk_label_get_text(GTK_LABEL(gtk_list_box_row_get_child(row)))[0] != '.';
+    return g_variant_get_boolean(data) || gtk_widget_get_name(GTK_WIDGET(row))[1] == 'v';
 }
 
 static void s_show_hidden_files_activate(GSimpleAction* const action, GVariant* const param, const gpointer state)
@@ -86,6 +84,7 @@ static void s_show_hidden_files_activate(GSimpleAction* const action, GVariant* 
     GlobalState* const global_state = state;
 
     gtk_list_box_set_filter_func(global_state->file_list_box, s_filter_by_hidden, param, NULL);
+    gtk_list_box_unselect_all(global_state->file_list_box);
     g_simple_action_set_state(action, param);
 }
 
